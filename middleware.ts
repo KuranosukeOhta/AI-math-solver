@@ -15,8 +15,14 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname
   
-  // API エンドポイントとパブリックパスはスキップ
-  if (path.startsWith('/api/') || publicPaths.some(p => path.startsWith(p))) {
+  // API エンドポイント、静的ファイル、パブリックパスはスキップ
+  if (
+    path.startsWith('/api/') || 
+    path.startsWith('/_next/') || 
+    path.startsWith('/static/') || 
+    path.includes('.') || // ファイル拡張子を持つパス（favicon.ico など）
+    publicPaths.some(p => path.startsWith(p))
+  ) {
     return NextResponse.next()
   }
 
