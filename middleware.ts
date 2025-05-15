@@ -2,7 +2,16 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
+// 静的ファイルの拡張子リスト
+const STATIC_FILE_EXTENSIONS = ['.js', '.css', '.jpg', '.jpeg', '.png', '.gif', '.svg', '.ico', '.json', '.woff', '.woff2', '.ttf', '.eot'];
+
 export async function middleware(request: NextRequest) {
+  // 開発モードでは認証チェックをスキップ
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  if (isDevelopment) {
+    return NextResponse.next();
+  }
+
   // 認証が必要ないパスはスキップ
   const publicPaths = [
     '/auth/signin',
@@ -14,13 +23,20 @@ export async function middleware(request: NextRequest) {
   ]
 
   const path = request.nextUrl.pathname
+  const url = request.nextUrl.toString()
+  
+  // 静的ファイルかどうかをチェック
+  const isStaticFile = 
+    path.startsWith('/_next/') || 
+    path.startsWith('/static/') || 
+    STATIC_FILE_EXTENSIONS.some(ext => path.endsWith(ext)) ||
+    url.includes('/_next/static/') ||
+    url.includes('v=');
   
   // API エンドポイント、静的ファイル、パブリックパスはスキップ
   if (
     path.startsWith('/api/') || 
-    path.startsWith('/_next/') || 
-    path.startsWith('/static/') || 
-    path.includes('.') || // ファイル拡張子を持つパス（favicon.ico など）
+    isStaticFile ||
     publicPaths.some(p => path.startsWith(p))
   ) {
     return NextResponse.next()
@@ -52,4 +68,18 @@ export async function middleware(request: NextRequest) {
   }
 
   return NextResponse.next()
+}
+
+// 静的ファイルへのパスを明示的に除外
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.js|.*\\.css|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.ico).*)',
+  ],
 } 

@@ -21,6 +21,11 @@ const nextConfig = {
   assetPrefix: '',
   // 静的エクスポートを無効化（APIルートを使用するため）
   // output: 'export',
+  // 静的ファイルの出力先を変更
+  distDir: '.next',
+  // 静的ファイルの提供方法を設定
+  poweredByHeader: false,
+  generateEtags: false,
 }
 
 module.exports = nextConfig
