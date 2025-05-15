@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import DebugLogin from './debug'
 
 export default function SignIn() {
     const [email, setEmail] = useState('')
@@ -109,6 +110,9 @@ export default function SignIn() {
                         </button>
                     </div>
                 </form>
+
+                {/* デバッグコンポーネント */}
+                <DebugLogin />
             </div>
         </div>
     )
