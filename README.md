@@ -78,3 +78,87 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+## Supabase設定
+
+以下のテーブルをSupabaseで作成する必要があります：
+
+### usersテーブル
+```sql
+create table public.users (
+  id uuid default uuid_generate_v4() primary key,
+  email text unique not null,
+  password text not null,
+  name text,
+  created_at timestamp with time zone default now() not null,
+  updated_at timestamp with time zone default now() not null
+);
+
+-- RLSポリシーを設定
+alter table public.users enable row level security;
+```
+
+### subscriptionsテーブル
+```sql
+create table public.subscriptions (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references public.users(id) not null,
+  subscription_end timestamp with time zone not null,
+  payment_id uuid references public.payments(id),
+  created_at timestamp with time zone default now() not null
+);
+
+-- RLSポリシーを設定
+alter table public.subscriptions enable row level security;
+```
+
+### paymentsテーブル
+```sql
+create table public.payments (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references public.users(id) not null,
+  amount integer not null,
+  stripe_id text,
+  status text not null,
+  hours_added integer not null,
+  created_at timestamp with time zone default now() not null
+);
+
+-- RLSポリシーを設定
+alter table public.payments enable row level security;
+```
+
+## 環境変数設定
+
+以下の環境変数をVercelダッシュボードで設定する必要があります：
+
+```
+# Dify API設定
+NEXT_PUBLIC_APP_ID=your_dify_app_id
+NEXT_PUBLIC_APP_KEY=your_dify_api_key
+NEXT_PUBLIC_API_URL=your_dify_api_url
+
+# Stripe API設定
+STRIPE_SECRET_KEY=your_stripe_secret_key
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+
+# NextAuth設定
+NEXTAUTH_SECRET=your_nextauth_secret
+NEXTAUTH_URL=https://your-domain.vercel.app
+
+# Supabase設定
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# 料金設定（円）
+NEXT_PUBLIC_PRICE_PER_HOUR=300
+```
+
+## Stripe Webhook設定
+
+1. Stripeダッシュボードで新しいWebhookエンドポイントを作成します
+2. エンドポイントURLを `https://your-domain.vercel.app/api/stripe/webhook` に設定します
+3. 以下のイベントを購読します：
+   - `checkout.session.completed`
+4. Signing Secretをコピーして、環境変数 `STRIPE_WEBHOOK_SECRET` に設定します
