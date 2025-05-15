@@ -105,6 +105,7 @@ create table public.subscriptions (
   user_id uuid references public.users(id) not null,
   subscription_end timestamp with time zone not null,
   payment_id uuid references public.payments(id),
+  is_trial boolean default false,
   created_at timestamp with time zone default now() not null
 );
 
@@ -119,8 +120,8 @@ create table public.payments (
   user_id uuid references public.users(id) not null,
   amount integer not null,
   stripe_id text,
-  status text not null,
-  hours_added integer not null,
+  status text not null, -- 'completed', 'trial', 'failed', 'pending'のいずれか
+  hours_added numeric not null, -- 小数点以下も許可（トライアル用）
   created_at timestamp with time zone default now() not null
 );
 
@@ -144,7 +145,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
 STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 
 # NextAuth設定
-NEXTAUTH_SECRET=your_nextauth_secret
+NEXTAUTH_SECRET=bKkXKFqmg0ooaQ5FCJIPWXiYwJxEDQFQ07wP0txd7eY=
 NEXTAUTH_URL=https://your-domain.vercel.app
 
 # Supabase設定
@@ -154,6 +155,14 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 # 料金設定（円）
 NEXT_PUBLIC_PRICE_PER_HOUR=300
 ```
+
+## トライアル機能
+
+このアプリケーションには以下の機能が含まれています：
+
+1. **無料トライアル**: 新規ユーザーは初回ログイン時に5分間の無料トライアル期間が自動的に付与されます
+2. **時間制課金**: トライアル後は1時間あたり300円の料金で利用可能です
+3. **残り時間表示**: 現在のサブスクリプションの残り時間がリアルタイムで表示されます
 
 ## Stripe Webhook設定
 

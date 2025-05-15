@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/utils/supabase'
 
 export default function Payment() {
     const { data: session } = useSession()
@@ -10,6 +11,8 @@ export default function Payment() {
     const [loading, setLoading] = useState(false)
     const [selectedHours, setSelectedHours] = useState(1)
     const [error, setError] = useState('')
+    const [hasUsedTrial, setHasUsedTrial] = useState(false)
+    const [checkingTrial, setCheckingTrial] = useState(true)
 
     // 1時間あたりの料金
     const pricePerHour = parseInt(process.env.NEXT_PUBLIC_PRICE_PER_HOUR || '300')
@@ -21,16 +24,66 @@ export default function Payment() {
 
     const isSubscriptionActive = subscriptionEnd && subscriptionEnd > new Date()
 
+    // トライアル状態を確認
+    useEffect(() => {
+        const checkTrialStatus = async () => {
+            if (session?.user?.id) {
+                try {
+                    const { data } = await supabase
+                        .from('payments')
+                        .select('*')
+                        .eq('user_id', session.user.id)
+                        .eq('status', 'trial')
+                        .limit(1)
+
+                    setHasUsedTrial(data && data.length > 0)
+                } catch (error) {
+                    console.error('トライアル状態確認エラー:', error)
+                } finally {
+                    setCheckingTrial(false)
+                }
+            } else {
+                setCheckingTrial(false)
+            }
+        }
+
+        checkTrialStatus()
+    }, [session])
+
     // 残り時間を計算
     const getRemainingTime = () => {
         if (!subscriptionEnd || !isSubscriptionActive) return null
 
         const now = new Date()
         const diffMs = subscriptionEnd.getTime() - now.getTime()
-        const diffHrs = Math.round(diffMs / (1000 * 60 * 60))
-        const diffMins = Math.round((diffMs % (1000 * 60 * 60)) / (1000 * 60))
 
+        // 5分未満の場合は分と秒で表示
+        if (diffMs < 5 * 60 * 1000) {
+            const diffMins = Math.floor(diffMs / (1000 * 60))
+            const diffSecs = Math.floor((diffMs % (1000 * 60)) / 1000)
+            return `${diffMins}分${diffSecs}秒`
+        }
+
+        // それ以外は時間と分で表示
+        const diffHrs = Math.floor(diffMs / (1000 * 60 * 60))
+        const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
         return `${diffHrs}時間${diffMins}分`
+    }
+
+    // トライアル状態のテキストを取得
+    const getTrialStatusText = () => {
+        if (checkingTrial) return '確認中...'
+
+        if (isSubscriptionActive) {
+            const remainingTime = getRemainingTime()
+            return `現在のサブスクリプションは ${subscriptionEnd?.toLocaleString('ja-JP')} まで有効です（残り約${remainingTime}）`
+        }
+
+        if (hasUsedTrial) {
+            return 'トライアル期間は終了しました。サービスを継続するには支払いが必要です。'
+        }
+
+        return '5分間の無料トライアルをご利用いただけます。ログインするとすぐに開始されます。'
     }
 
     const handlePayment = async () => {
@@ -69,9 +122,7 @@ export default function Payment() {
                         AI数学ソルバー 利用料金
                     </h2>
                     <p className="mt-2 text-center text-sm text-gray-600">
-                        {isSubscriptionActive
-                            ? `現在のサブスクリプションは ${subscriptionEnd?.toLocaleString('ja-JP')} まで有効です（残り約${getRemainingTime()}）`
-                            : '現在有効なサブスクリプションはありません'}
+                        {getTrialStatusText()}
                     </p>
                 </div>
 
@@ -80,6 +131,24 @@ export default function Payment() {
                         <div className="flex">
                             <div className="ml-3">
                                 <h3 className="text-sm font-medium text-red-800">{error}</h3>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {!isSubscriptionActive && (
+                    <div className="bg-blue-50 p-4 rounded-md mb-4">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <h3 className="text-sm font-medium text-blue-800">初回登録特典</h3>
+                                <div className="mt-2 text-sm text-blue-700">
+                                    <p>初めてのご利用の方には、5分間の無料トライアル期間をご提供しています。</p>
+                                </div>
                             </div>
                         </div>
                     </div>
