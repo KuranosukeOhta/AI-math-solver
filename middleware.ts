@@ -6,11 +6,11 @@ import { getToken } from 'next-auth/jwt'
 const STATIC_FILE_EXTENSIONS = ['.js', '.css', '.jpg', '.jpeg', '.png', '.gif', '.svg', '.ico', '.json', '.woff', '.woff2', '.ttf', '.eot'];
 
 export async function middleware(request: NextRequest) {
-  // 開発モードでは認証チェックをスキップ
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  if (isDevelopment) {
-    return NextResponse.next();
-  }
+  // 開発モードでも認証チェックを行う（認証スキップを無効化）
+  // const isDevelopment = process.env.NODE_ENV === 'development';
+  // if (isDevelopment) {
+  //   return NextResponse.next();
+  // }
 
   // 認証が必要ないパスはスキップ
   const publicPaths = [
