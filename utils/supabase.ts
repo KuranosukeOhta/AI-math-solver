@@ -1,12 +1,17 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-console.log('Supabase URL:', supabaseUrl)
+// 環境変数が設定されているか確認
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Supabase環境変数が設定されていません。NEXT_PUBLIC_SUPABASE_URLとNEXT_PUBLIC_SUPABASE_ANON_KEYを.envファイルに設定してください。')
+}
+
+console.log('Supabase URL:', supabaseUrl ? supabaseUrl.substring(0, 10) + '...' : 'Not set')
 console.log('Supabase Key Length:', supabaseKey ? supabaseKey.length : 0)
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+export const supabase = createClient(supabaseUrl || '', supabaseKey || '')
 
 // トライアル期間（分）
 const TRIAL_MINUTES = 5
@@ -152,34 +157,48 @@ export const updateUserSubscription = async (
 
 // ユーザー関連の関数
 export const getUserByEmail = async (email: string) => {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('email', email)
-    .single()
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single()
 
-  if (error) {
-    console.error('ユーザー取得エラー:', error)
+    if (error) {
+      console.error('ユーザー取得エラー:', error)
+      if (error.code === 'PGRST116') {
+        // レコードが見つからない場合は正常にnullを返す
+        return null
+      }
+      throw new Error(`ユーザー取得エラー: ${error.message}`)
+    }
+
+    return data
+  } catch (err) {
+    console.error('ユーザー取得中に例外が発生しました:', err)
     return null
   }
-
-  return data
 }
 
 export const createUser = async (email: string, hashedPassword: string) => {
-  const { data, error } = await supabase
-    .from('users')
-    .insert({
-      email,
-      password: hashedPassword
-    })
-    .select()
-    .single()
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .insert({
+        email,
+        password: hashedPassword
+      })
+      .select()
+      .single()
 
-  if (error) {
-    console.error('ユーザー作成エラー:', error)
+    if (error) {
+      console.error('ユーザー作成エラー:', error)
+      throw new Error(`ユーザー作成エラー: ${error.message}`)
+    }
+
+    return data
+  } catch (err) {
+    console.error('ユーザー作成中に例外が発生しました:', err)
     return null
   }
-
-  return data
 } 
