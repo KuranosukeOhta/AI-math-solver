@@ -3,6 +3,7 @@ import React from 'react'
 import {
   Bars3Icon,
   PencilSquareIcon,
+  ExclamationCircleIcon,
 } from '@heroicons/react/24/solid'
 import AppIcon from '@/app/components/base/app-icon'
 import { useSession } from 'next-auth/react'
@@ -22,15 +23,24 @@ const Header: FC<IHeaderProps> = ({
 }) => {
   const { data: session } = useSession()
 
+  // サブスクリプションの有効状態を確認
+  const isSubscriptionActive = () => {
+    const subscriptionEnd = session?.user?.subscriptionEnd
+      ? new Date(session.user.subscriptionEnd as string)
+      : null
+
+    return subscriptionEnd && subscriptionEnd > new Date()
+  }
+
   // 残り時間を計算
   const getRemainingTime = () => {
     const subscriptionEnd = session?.user?.subscriptionEnd
       ? new Date(session.user.subscriptionEnd as string)
       : null
 
-    const isSubscriptionActive = subscriptionEnd && subscriptionEnd > new Date()
+    const isActive = subscriptionEnd && subscriptionEnd > new Date()
 
-    if (!subscriptionEnd || !isSubscriptionActive) return null
+    if (!subscriptionEnd || !isActive) return null
 
     const now = new Date()
     const diffMs = subscriptionEnd.getTime() - now.getTime()
@@ -48,6 +58,7 @@ const Header: FC<IHeaderProps> = ({
     return `${diffHrs}時間${diffMins}分`
   }
 
+  const subscriptionActive = isSubscriptionActive()
   const remainingTime = getRemainingTime()
 
   return (
@@ -67,12 +78,17 @@ const Header: FC<IHeaderProps> = ({
         <div className=" text-sm text-gray-800 font-bold">{title}</div>
       </div>
       <div className='flex items-center'>
-        {remainingTime && (
+        {subscriptionActive ? (
           <div className="mr-3 text-xs text-gray-600">
             残り時間: <span className="font-medium text-primary-600">{remainingTime}</span>
           </div>
+        ) : (
+          <div className="mr-3 text-xs flex items-center text-amber-600">
+            <ExclamationCircleIcon className="h-3 w-3 mr-1" />
+            <span>サブスクリプション期限切れ - 閲覧のみ可能</span>
+          </div>
         )}
-        {isMobile && (
+        {isMobile && subscriptionActive && (
           <div className='flex items-center justify-center h-8 w-8 cursor-pointer'
             onClick={() => onCreateNewChat?.()}
           >

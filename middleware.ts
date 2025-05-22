@@ -59,10 +59,15 @@ export async function middleware(request: NextRequest) {
   const subscriptionEnd = token.subscriptionEnd ? new Date(token.subscriptionEnd as string) : null
   const now = new Date()
   
-  // サブスクリプションが有効でない場合は支払いページにリダイレクト
+  // サブスクリプションが有効でない場合は、新規チャット作成時のみ支払いページにリダイレクト
   if (!subscriptionEnd || subscriptionEnd < now) {
-    // チャットページへのアクセスの場合のみリダイレクト
-    if (path === '/' || path.startsWith('/chat')) {
+    // 新規チャット作成のURLパターンかどうかを確認
+    const isNewChatCreation = path === '/' || 
+                             (path.startsWith('/chat') && !path.includes('?id=')) || 
+                             path.includes('?id=-1');
+    
+    // 新規チャット作成の場合のみリダイレクト（既存チャット閲覧は許可）
+    if (isNewChatCreation) {
       return NextResponse.redirect(new URL('/payment', request.url))
     }
   }
