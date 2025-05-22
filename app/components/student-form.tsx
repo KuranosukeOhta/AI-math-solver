@@ -9,6 +9,7 @@ interface StudentFormProps {
 }
 
 const StudentForm: React.FC<StudentFormProps> = ({ onRegister }) => {
+    console.log('StudentForm: Component rendering')
     const { setStudentInfo, isRegistered, studentId: savedStudentId, name: savedName } = useStudent()
     const [studentId, setStudentId] = useState<string>(savedStudentId || '')
     const [name, setName] = useState<string>(savedName || '')
