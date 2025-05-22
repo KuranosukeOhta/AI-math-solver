@@ -9,6 +9,14 @@ import Toast from '@/app/components/base/toast'
 import { sendChatMessage, fetchChatList, updateFeedback } from '@/service'
 import { v4 as uuidv4 } from 'uuid'
 import { APP_ID, API_KEY, API_URL } from '@/config'
+import { Card, CardContent } from '@/components/ui/card'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { User } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+
+const ERROR_MESSAGES = {
+    SERVER: 'サーバーエラーが発生しました。もう一度お試しください。'
+}
 
 export default function ChatPage() {
     const { isRegistered, studentId, name } = useStudent()
@@ -235,30 +243,49 @@ export default function ChatPage() {
     }
 
     if (!isRegistered) {
-        return <div className="p-4">認証中...</div>
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <div className="flex flex-col items-center space-y-4">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-[250px]" />
+                        <Skeleton className="h-4 w-[200px]" />
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <header className="bg-white shadow-sm">
-                <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-                    <h1 className="text-xl font-bold text-gray-900">AI数学ソルバー</h1>
-                    <div className="text-sm text-gray-500">
-                        {name} ({studentId})
+        <div className="min-h-screen bg-background">
+            <header className="sticky top-0 z-10 border-b bg-card shadow-sm">
+                <div className="container mx-auto flex h-16 items-center justify-between px-4">
+                    <h1 className="text-xl font-bold text-foreground">AI数学ソルバー</h1>
+                    <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                            <AvatarFallback>
+                                <User className="h-4 w-4" />
+                            </AvatarFallback>
+                        </Avatar>
+                        <div className="text-sm text-muted-foreground">
+                            {name} ({studentId})
+                        </div>
                     </div>
                 </div>
             </header>
 
-            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-                <div className="px-4 py-6 sm:px-0">
-                    <Chat
-                        chatList={chatList}
-                        onSend={handleSend}
-                        onFeedback={handleFeedback}
-                        isResponding={isResponding}
-                        checkCanSend={checkCanSend}
-                    />
-                </div>
+            <main className="container mx-auto py-6 px-4">
+                <Card className="border-none shadow-none">
+                    <CardContent className="p-0">
+                        <Chat
+                            chatList={chatList}
+                            onSend={handleSend}
+                            onFeedback={handleFeedback}
+                            isResponding={isResponding}
+                            checkCanSend={checkCanSend}
+                        />
+                    </CardContent>
+                </Card>
             </main>
         </div>
     )
