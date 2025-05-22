@@ -6,30 +6,79 @@ interface StudentContextType {
     studentId: string
     name: string
     isRegistered: boolean
-    setStudentInfo: (studentId: string, name: string) => void
+    setStudentInfo: (studentId: string, name: string) => Promise<void>
     clearStudentInfo: () => void
 }
 
 const StudentContext = createContext<StudentContextType | undefined>(undefined)
 
 export function StudentProvider({ children }: { children: ReactNode }) {
-    // 固定の学生情報（ダミー）
-    const [studentId, setStudentId] = useState<string>('aa12345')
-    const [name, setName] = useState<string>('ゲストユーザー')
-    // 常に登録済みとして扱う
-    const [isRegistered, setIsRegistered] = useState<boolean>(true)
+    const [studentId, setStudentId] = useState<string>('')
+    const [name, setName] = useState<string>('')
+    const [isRegistered, setIsRegistered] = useState<boolean>(false)
 
-    // 登録機能（コールされてもローカルだけで処理する）
+    useEffect(() => {
+        const checkRegistration = async () => {
+            try {
+                const response = await fetch('/api/student/check', {
+                    method: 'GET',
+                    credentials: 'include',
+                })
+
+                if (response.ok) {
+                    const data = await response.json()
+                    if (data.success && data.studentId && data.name) {
+                        setStudentId(data.studentId)
+                        setName(data.name)
+                        setIsRegistered(true)
+                    }
+                } else {
+                    setIsRegistered(false)
+                }
+            } catch (error) {
+                console.error('学生情報確認エラー:', error)
+                setIsRegistered(false)
+            }
+        }
+
+        checkRegistration()
+    }, [])
+
     const setStudentInfo = async (newStudentId: string, newName: string) => {
-        setStudentId(newStudentId)
-        setName(newName)
-        setIsRegistered(true)
-        return true
+        try {
+            const response = await fetch('/api/student/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ studentId: newStudentId, name: newName }),
+            })
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    setStudentId(newStudentId)
+                    setName(newName)
+                    setIsRegistered(true)
+                } else {
+                    throw new Error(data.message || '登録に失敗しました');
+                }
+            } else {
+                const errorData = await response.json()
+                throw new Error(errorData.message || '登録に失敗しました')
+            }
+        } catch (error) {
+            console.error('学生情報登録エラー:', error)
+            throw error
+        }
     }
 
     const clearStudentInfo = () => {
-        setStudentId('aa12345')
-        setName('ゲストユーザー')
+        setStudentId('')
+        setName('')
+        setIsRegistered(false)
+        fetch('/api/student/logout', { method: 'POST' });
+        document.cookie = 'userId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
     }
 
     return (
