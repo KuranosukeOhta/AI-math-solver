@@ -15,6 +15,7 @@ import Toast from '@/app/components/base/toast'
 import ChatImageUploader from '@/app/components/base/image-uploader/chat-image-uploader'
 import ImageList from '@/app/components/base/image-uploader/image-list'
 import { useImageFiles } from '@/app/components/base/image-uploader/hooks'
+import { useTokenRecorder } from '@/app/hooks/use-token-recorder'
 
 export type IChatProps = {
   chatList: ChatItem[]
@@ -50,6 +51,7 @@ const Chat: FC<IChatProps> = ({
   const { t } = useTranslation()
   const { notify } = Toast
   const isUseInputMethod = useRef(false)
+  const { recordTokenUsage } = useTokenRecorder()
 
   const [query, setQuery] = React.useState('')
   const handleContentChange = (e: any) => {
@@ -68,6 +70,26 @@ const Chat: FC<IChatProps> = ({
     }
     return true
   }
+
+  // 最後の応答が来たときにトークン使用量を記録
+  useEffect(() => {
+    // 応答が完了したときに実行（最後のメッセージが応答で、応答中ではない場合）
+    if (chatList.length >= 2 && !isResponding) {
+      const lastItem = chatList[chatList.length - 1]
+      const secondLastItem = chatList[chatList.length - 2]
+
+      if (lastItem.isAnswer && !secondLastItem.isAnswer) {
+        // 最後のユーザーの質問と応答のペアでトークン使用量を記録
+        recordTokenUsage(
+          secondLastItem.content,
+          lastItem.content,
+          'gpt-4' // デフォルトモデル
+        ).catch(err => {
+          console.error('トークン記録エラー:', err)
+        })
+      }
+    }
+  }, [chatList, isResponding, recordTokenUsage])
 
   useEffect(() => {
     if (controlClearQuery)

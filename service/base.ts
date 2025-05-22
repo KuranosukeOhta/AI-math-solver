@@ -1,4 +1,4 @@
-import { API_PREFIX } from '@/config'
+import { API_PREFIX, APP_ID, API_KEY } from '@/config'
 import Toast from '@/app/components/base/toast'
 import type { AnnotationReply, MessageEnd, MessageReplace, ThoughtItem } from '@/app/components/chat/type'
 import type { VisionFile } from '@/types/app'
@@ -101,18 +101,17 @@ export type IOnDataMoreInfo = {
   errorCode?: string
 }
 
-export type IOnData = (message: string, isFirstMessage: boolean, moreInfo: IOnDataMoreInfo) => void
-export type IOnThought = (though: ThoughtItem) => void
-export type IOnFile = (file: VisionFile) => void
-export type IOnMessageEnd = (messageEnd: MessageEnd) => void
-export type IOnMessageReplace = (messageReplace: MessageReplace) => void
-export type IOnAnnotationReply = (messageReplace: AnnotationReply) => void
+export type IOnData = (text: string, isFirstMessage: boolean, params: Record<string, any>) => void
+export type IOnThought = (thought: any) => boolean | void
+export type IOnFile = (file: any) => void
+export type IOnMessageEnd = (messageEnd: any) => void
+export type IOnMessageReplace = (messageReplace: any) => void
 export type IOnCompleted = (hasError?: boolean) => void
-export type IOnError = (msg: string, code?: string) => void
-export type IOnWorkflowStarted = (workflowStarted: WorkflowStartedResponse) => void
-export type IOnWorkflowFinished = (workflowFinished: WorkflowFinishedResponse) => void
-export type IOnNodeStarted = (nodeStarted: NodeStartedResponse) => void
-export type IOnNodeFinished = (nodeFinished: NodeFinishedResponse) => void
+export type IOnError = () => void
+export type IOnWorkflowStarted = (data: Record<string, any>) => void
+export type IOnNodeStarted = (data: Record<string, any>) => void
+export type IOnNodeFinished = (data: Record<string, any>) => void
+export type IOnWorkflowFinished = (data: Record<string, any>) => void
 
 type IOtherOptions = {
   isPublicAPI?: boolean
@@ -398,7 +397,7 @@ export const ssePost = (
             Toast.notify({ type: 'error', message: data.message || 'Server Error' })
           })
         })
-        onError?.('Server Error')
+        onError?.()
         return
       }
       return handleStream(res, (str: string, isFirstMessage: boolean, moreInfo: IOnDataMoreInfo) => {
@@ -412,7 +411,7 @@ export const ssePost = (
       }, onThought, onMessageEnd, onMessageReplace, onFile, onWorkflowStarted, onWorkflowFinished, onNodeStarted, onNodeFinished)
     }).catch((e) => {
       Toast.notify({ type: 'error', message: e })
-      onError?.(e)
+      onError?.()
     })
 }
 
@@ -420,12 +419,74 @@ export const request = (url: string, options = {}, otherOptions?: IOtherOptions)
   return baseFetch(url, options, otherOptions || {})
 }
 
-export const get = (url: string, options = {}, otherOptions?: IOtherOptions) => {
-  return request(url, Object.assign({}, options, { method: 'GET' }), otherOptions)
+export const get = (url: string, { params }: { params?: Record<string, any> }) => {
+  const urlInstance = new URL(`${API_PREFIX}/${url}`)
+  if (params) {
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined && params[key] !== null)
+        urlInstance.searchParams.append(key, params[key])
+    })
+  }
+  const res = fetch(urlInstance, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'App-Id': APP_ID || '',
+      'Api-Key': API_KEY || '',
+    },
+  })
+  return handleStream(res as unknown as Response, (str: string, isFirstMessage: boolean, moreInfo: IOnDataMoreInfo) => {
+    if (moreInfo.errorMessage) {
+      Toast.notify({ type: 'error', message: moreInfo.errorMessage })
+    }
+  }, () => {
+    // Handle completion
+  }, (thought: any) => {
+    // Handle thought
+  }, (messageEnd: any) => {
+    // Handle message end
+  }, (messageReplace: any) => {
+    // Handle message replace
+  }, (file: any) => {
+    // Handle file
+  }, (data: any) => {
+    // Handle workflow started
+  }, (data: any) => {
+    // Handle workflow finished
+  }, (data: any) => {
+    // Handle node started
+  }, (data: any) => {
+    // Handle node finished
+  })
 }
 
-export const post = (url: string, options = {}, otherOptions?: IOtherOptions) => {
-  return request(url, Object.assign({}, options, { method: 'POST' }), otherOptions)
+export const post = (url: string, { body }: { body: Record<string, any> }) => {
+  const res = fetch(`${API_PREFIX}/${url}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'App-Id': APP_ID || '',
+      'Api-Key': API_KEY || '',
+    },
+    body: JSON.stringify(body),
+  })
+  return handleStream(res as unknown as Response, (str: string, isFirstMessage: boolean, moreInfo: IOnDataMoreInfo) => {
+    if (moreInfo.errorMessage) {
+      Toast.notify({ type: 'error', message: moreInfo.errorMessage })
+    }
+  }, () => {
+    // Handle completion
+  }, (thought: any) => {
+    // Handle thought
+  }, (file: any) => {
+    // Handle file
+  }, (messageEnd: any) => {
+    // Handle message end
+  }, (messageReplace: any) => {
+    // Handle message replace
+  }, (file: any) => {
+    // Handle file
+  })
 }
 
 export const put = (url: string, options = {}, otherOptions?: IOtherOptions) => {

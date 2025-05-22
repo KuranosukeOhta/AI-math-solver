@@ -16,10 +16,8 @@ export async function middleware(request: NextRequest) {
   const publicPaths = [
     '/auth/signin',
     '/auth/signup',
-    '/payment/success',
-    '/payment/cancel',
+    '/student/register',
     '/api/auth',
-    '/api/stripe/webhook',
   ]
 
   const path = request.nextUrl.pathname
@@ -55,12 +53,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // サブスクリプションの有効期限をチェック
-  const subscriptionEnd = token.subscriptionEnd ? new Date(token.subscriptionEnd as string) : null
-  const now = new Date()
+  // 学生IDが登録されているかチェック
+  const studentId = token.studentId as string | null
   
-  // サブスクリプションが有効でない場合は、新規チャット作成時のみ支払いページにリダイレクト
-  if (!subscriptionEnd || subscriptionEnd < now) {
+  // 学生IDが登録されていない場合は、登録ページにリダイレクト
+  if (!studentId) {
     // 新規チャット作成のURLパターンかどうかを確認
     const isNewChatCreation = path === '/' || 
                              (path.startsWith('/chat') && !path.includes('?id=')) || 
@@ -68,7 +65,7 @@ export async function middleware(request: NextRequest) {
     
     // 新規チャット作成の場合のみリダイレクト（既存チャット閲覧は許可）
     if (isNewChatCreation) {
-      return NextResponse.redirect(new URL('/payment', request.url))
+      return NextResponse.redirect(new URL('/student/register', request.url))
     }
   }
 

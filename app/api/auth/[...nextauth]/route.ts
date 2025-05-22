@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { compare, hash } from 'bcrypt'
-import { createUser, getUserByEmail, getUserSubscription, setTrialPeriod, hasUserUsedTrial } from '@/utils/supabase'
+import { createUser, getUserByEmail } from '@/utils/supabase'
 
 const handler = NextAuth({
   providers: [
@@ -25,14 +25,11 @@ const handler = NextAuth({
           const newUser = await createUser(credentials.email, hashedPassword)
           
           if (!newUser) return null
-
-          // 新規ユーザーにトライアル期間を設定
-          const trial = await setTrialPeriod(newUser.id)
           
           return {
             id: newUser.id,
             email: newUser.email,
-            subscriptionEnd: trial?.subscription_end || null
+            studentId: newUser.studentId
           }
         }
 
@@ -42,27 +39,10 @@ const handler = NextAuth({
           return null
         }
 
-        // サブスクリプション情報を取得
-        const subscription = await getUserSubscription(user.id)
-
-        // サブスクリプションがなく、トライアルも使用していない場合は、トライアル期間を設定
-        if (!subscription) {
-          const hasUsedTrial = await hasUserUsedTrial(user.id)
-          
-          if (!hasUsedTrial) {
-            const trial = await setTrialPeriod(user.id)
-            return {
-              id: user.id,
-              email: user.email,
-              subscriptionEnd: trial?.subscription_end || null
-            }
-          }
-        }
-
         return {
           id: user.id,
           email: user.email,
-          subscriptionEnd: subscription?.subscription_end || null
+          studentId: user.studentId
         }
       }
     })
@@ -72,13 +52,7 @@ const handler = NextAuth({
       if (user) {
         token.id = user.id
         token.email = user.email
-        token.subscriptionEnd = user.subscriptionEnd
-      } else if (token.id) {
-        // セッション中にサブスクリプション情報を更新する
-        const subscription = await getUserSubscription(token.id as string)
-        if (subscription) {
-          token.subscriptionEnd = subscription.subscription_end
-        }
+        token.studentId = user.studentId
       }
       return token
     },
@@ -86,7 +60,7 @@ const handler = NextAuth({
       if (token) {
         session.user.id = token.id as string
         session.user.email = token.email as string
-        session.user.subscriptionEnd = token.subscriptionEnd as string | null
+        session.user.studentId = token.studentId as string | null
       }
       return session
     }

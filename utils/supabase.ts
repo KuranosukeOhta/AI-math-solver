@@ -13,147 +13,128 @@ console.log('Supabase Key Length:', supabaseKey ? supabaseKey.length : 0)
 
 export const supabase = createClient(supabaseUrl || '', supabaseKey || '')
 
-// トライアル期間（分）
-const TRIAL_MINUTES = 5
-
-// サブスクリプション関連の関数
-export const getUserSubscription = async (userId: string) => {
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
-
-  if (error) {
-    console.error('サブスクリプション取得エラー:', error)
-    return null
-  }
-
-  return data
+// OpenAI APIの料金（1000トークンあたりの価格、単位: USD）
+// 2024年8月時点の情報。変更された場合は更新が必要
+const TOKEN_PRICE = {
+  INPUT: 0.5 / 1000,  // $0.5 per 1M tokens for input
+  OUTPUT: 1.5 / 1000,  // $1.5 per 1M tokens for output
 }
 
-// トライアル期間を設定する関数
-export const setTrialPeriod = async (userId: string) => {
-  const now = new Date()
-  const trialEnd = new Date(now.getTime() + TRIAL_MINUTES * 60 * 1000) // 現在時刻から5分後
-
-  // トライアル情報を記録
-  const { data: payment, error: paymentError } = await supabase
-    .from('payments')
-    .insert({
-      user_id: userId,
-      amount: 0, // 無料
-      hours_added: TRIAL_MINUTES / 60, // 時間単位に変換（0.0833...時間）
-      status: 'trial',
-      stripe_id: null
-    })
-    .select()
-    .single()
-
-  if (paymentError) {
-    console.error('トライアル支払い情報記録エラー:', paymentError)
-    return null
-  }
-
-  // サブスクリプション情報を更新
-  const { data: subscription, error: subError } = await supabase
-    .from('subscriptions')
-    .upsert({
-      user_id: userId,
-      subscription_end: trialEnd.toISOString(),
-      payment_id: payment.id,
-      is_trial: true
-    })
-    .select()
-    .single()
-
-  if (subError) {
-    console.error('トライアルサブスクリプション更新エラー:', subError)
-    return null
-  }
-
-  return subscription
+/**
+ * 学番の形式をバリデーションする関数
+ * 形式: 2文字のアルファベット + 5桁の数字（例: ab12345）
+ */
+export const validateStudentId = (studentId: string): boolean => {
+  const regex = /^[a-zA-Z]{2}\d{5}$/;
+  return regex.test(studentId);
 }
 
-// ユーザーがトライアル済みかチェックする関数
-export const hasUserUsedTrial = async (userId: string) => {
-  const { data, error } = await supabase
-    .from('payments')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('status', 'trial')
-    .limit(1)
+/**
+ * トークン使用量を記録する関数
+ */
+export const recordTokenUsage = async (userId: string, inputTokens: number, outputTokens: number, model: string) => {
+  try {
+    // トークン使用量をテーブルに記録
+    const { error: logError } = await supabase
+      .from('token_usage_logs')
+      .insert({
+        user_id: userId,
+        input_tokens: inputTokens,
+        output_tokens: outputTokens,
+        model: model,
+      });
+
+    if (logError) {
+      console.error('トークン使用量記録エラー:', logError);
+      return false;
+    }
+
+    // ユーザーの総トークン使用量を更新
+    const totalCost = (inputTokens * TOKEN_PRICE.INPUT) + (outputTokens * TOKEN_PRICE.OUTPUT);
     
-  if (error) {
-    console.error('トライアル履歴チェックエラー:', error)
-    return false
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        token_usage: supabase.rpc('increment', { x: inputTokens + outputTokens }),
+        estimated_cost: supabase.rpc('increment_float', { x: totalCost })
+      })
+      .eq('id', userId);
+
+    if (updateError) {
+      console.error('ユーザーのトークン使用量更新エラー:', updateError);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('トークン使用量記録中のエラー:', error);
+    return false;
   }
-  
-  return data && data.length > 0
 }
 
-export const updateUserSubscription = async (
-  userId: string,
-  hours: number
-) => {
-  // 現在のサブスクリプション情報を取得
-  const { data: currentSub } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
+/**
+ * ユーザーIDからユーザー情報を取得する関数
+ */
+export const getUserById = async (userId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
 
-  const now = new Date()
-  let subscriptionEnd: Date
+    if (error) {
+      console.error('ユーザー取得エラー:', error);
+      return null;
+    }
 
-  if (currentSub && new Date(currentSub.subscription_end) > now) {
-    // 既存のサブスクリプションがある場合は期限を延長
-    subscriptionEnd = new Date(new Date(currentSub.subscription_end).getTime() + hours * 60 * 60 * 1000)
-  } else {
-    // 新規または期限切れの場合は現在時刻から計算
-    subscriptionEnd = new Date(now.getTime() + hours * 60 * 60 * 1000)
+    return data;
+  } catch (error) {
+    console.error('ユーザー取得中のエラー:', error);
+    return null;
   }
-
-  // 支払い情報を記録
-  const { data: payment, error: paymentError } = await supabase
-    .from('payments')
-    .insert({
-      user_id: userId,
-      amount: parseInt(process.env.NEXT_PUBLIC_PRICE_PER_HOUR || '300') * hours,
-      hours_added: hours,
-      status: 'completed'
-    })
-    .select()
-    .single()
-
-  if (paymentError) {
-    console.error('支払い情報記録エラー:', paymentError)
-    return null
-  }
-
-  // サブスクリプション情報を更新
-  const { data: subscription, error: subError } = await supabase
-    .from('subscriptions')
-    .upsert({
-      user_id: userId,
-      subscription_end: subscriptionEnd.toISOString(),
-      payment_id: payment.id,
-      is_trial: false
-    })
-    .select()
-    .single()
-
-  if (subError) {
-    console.error('サブスクリプション更新エラー:', subError)
-    return null
-  }
-
-  return subscription
 }
+
+// 学生IDを更新する関数
+export const updateStudentId = async (userId: string, studentId: string, name: string) => {
+  try {
+    // 学生IDが既に使用されているか確認
+    const { data: existingUser, error: checkError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('student_id', studentId)
+      .not('id', 'eq', userId)
+      .maybeSingle();
+    
+    if (checkError) {
+      console.error('学生ID重複チェックエラー:', checkError);
+      return { success: false, message: 'データベースエラーが発生しました' };
+    }
+    
+    if (existingUser) {
+      return { success: false, message: 'この学生IDは既に使用されています' };
+  }
+
+    // 学生IDと名前を更新
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        student_id: studentId,
+        name: name
+    })
+      .eq('id', userId);
+
+    if (updateError) {
+      console.error('ユーザー情報更新エラー:', updateError);
+      return { success: false, message: 'ユーザー情報の更新に失敗しました' };
+    }
+    
+    return { success: true, message: '学生情報が正常に登録されました' };
+  } catch (err) {
+    console.error('学生ID更新中にエラーが発生しました:', err);
+    return { success: false, message: '予期せぬエラーが発生しました' };
+  }
+};
 
 // ユーザー関連の関数
 export const getUserByEmail = async (email: string) => {
