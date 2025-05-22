@@ -18,6 +18,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ onRegister }) => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        console.log('StudentForm: handleSubmit started')
         setError('')
 
         if (!studentId || !name) {
@@ -34,6 +35,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ onRegister }) => {
 
         setIsLoading(true)
         try {
+            console.log('StudentForm: Calling setStudentInfo')
             await setStudentInfo(studentId, name)
             notify({ type: 'success', message: '登録が完了しました' })
             if (onRegister) onRegister()

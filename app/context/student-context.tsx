@@ -46,6 +46,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
 
     const setStudentInfo = async (newStudentId: string, newName: string) => {
         try {
+            console.log('StudentContext: setStudentInfo started');
             const response = await fetch('/api/student/register', {
                 method: 'POST',
                 headers: {
