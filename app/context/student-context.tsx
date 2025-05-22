@@ -13,65 +13,23 @@ interface StudentContextType {
 const StudentContext = createContext<StudentContextType | undefined>(undefined)
 
 export function StudentProvider({ children }: { children: ReactNode }) {
-    const [studentId, setStudentId] = useState<string>('')
-    const [name, setName] = useState<string>('')
-    const [isRegistered, setIsRegistered] = useState<boolean>(false)
+    // 固定の学生情報（ダミー）
+    const [studentId, setStudentId] = useState<string>('aa12345')
+    const [name, setName] = useState<string>('ゲストユーザー')
+    // 常に登録済みとして扱う
+    const [isRegistered, setIsRegistered] = useState<boolean>(true)
 
-    // 初期化時にクッキーから情報を取得
-    useEffect(() => {
-        const checkRegistration = async () => {
-            try {
-                const response = await fetch('/api/student/check', {
-                    method: 'GET',
-                    credentials: 'include',
-                })
-
-                if (response.ok) {
-                    const data = await response.json()
-                    if (data.success && data.studentId && data.name) {
-                        setStudentId(data.studentId)
-                        setName(data.name)
-                        setIsRegistered(true)
-                    }
-                }
-            } catch (error) {
-                console.error('学生情報確認エラー:', error)
-            }
-        }
-
-        checkRegistration()
-    }, [])
-
+    // 登録機能（コールされてもローカルだけで処理する）
     const setStudentInfo = async (newStudentId: string, newName: string) => {
-        try {
-            const response = await fetch('/api/student/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ studentId: newStudentId, name: newName }),
-            })
-
-            if (response.ok) {
-                setStudentId(newStudentId)
-                setName(newName)
-                setIsRegistered(true)
-            } else {
-                const errorData = await response.json()
-                throw new Error(errorData.message || '登録に失敗しました')
-            }
-        } catch (error) {
-            console.error('学生情報登録エラー:', error)
-            throw error
-        }
+        setStudentId(newStudentId)
+        setName(newName)
+        setIsRegistered(true)
+        return true
     }
 
     const clearStudentInfo = () => {
-        setStudentId('')
-        setName('')
-        setIsRegistered(false)
-        // クッキーを削除
-        document.cookie = 'userId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+        setStudentId('aa12345')
+        setName('ゲストユーザー')
     }
 
     return (

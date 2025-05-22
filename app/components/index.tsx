@@ -22,7 +22,6 @@ import AppUnavailable from '@/app/components/app-unavailable'
 import { API_KEY, APP_ID, APP_INFO, isShowPrompt, promptTemplate } from '@/config'
 import type { Annotation as AnnotationType } from '@/types/log'
 import { addFileInfos, sortAgentSorts } from '@/utils/tools'
-import StudentForm from '@/app/components/student-form'
 import { useStudent } from '@/app/context/student-context'
 
 export type IMainProps = {
@@ -51,23 +50,6 @@ const Main: FC<IMainProps> = () => {
     detail: Resolution.low,
     transfer_methods: [TransferMethod.local_file],
   })
-
-  // 学生情報が登録されているかチェック
-  if (!isRegistered) {
-    return (
-      <div className='bg-gray-100 min-h-screen flex flex-col'>
-        <Header
-          title={APP_INFO?.title || 'AI Math Solver'}
-          isMobile={isMobile}
-          onShowSideBar={() => { }}
-          onCreateNewChat={() => { }}
-        />
-        <div className="flex-1 flex items-center justify-center p-4">
-          <StudentForm />
-        </div>
-      </div>
-    )
-  }
 
   useEffect(() => {
     if (APP_INFO?.title)
@@ -246,7 +228,8 @@ const Main: FC<IMainProps> = () => {
       try {
         const [conversationData, appParams] = await Promise.all([fetchConversations(), fetchAppParams()])
         // handle current conversation id
-        const { data: conversations, error } = conversationData as { data: ConversationItem[]; error: string }
+        const conversationResult = conversationData as unknown as { data: ConversationItem[]; error: string }
+        const { data: conversations, error } = conversationResult
         if (error) {
           Toast.notify({ type: 'error', message: error })
           throw new Error(error)
