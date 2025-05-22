@@ -35,6 +35,22 @@ const Main: FC<IMainProps> = () => {
   const isMobile = media === MediaType.mobile
   const hasSetAppConfig = APP_ID && API_KEY
   const { isRegistered } = useStudent()
+  console.log('Main: isRegistered =', isRegistered);
+
+  const [hasSetInputs, setHasSetInputs] = useState(true);
+  const [canEditInputs, setCanEditInputs] = useState(true);
+
+  const handleStartChat = useCallback(() => {
+    setChatStarted()
+  }, [])
+
+  const createNewChat = useCallback(() => {
+    setChatNotStarted()
+  }, [])
+
+  const generateNewChatListWithOpenStatement = useCallback(() => {
+    return []
+  }, [])
 
   /*
   * app info
@@ -126,7 +142,7 @@ const Main: FC<IMainProps> = () => {
     if (!isNewConversation && !conversationIdChangeBecauseOfNew && !isResponding) {
       fetchChatList(currConversationId).then((res: any) => {
         const { data } = res
-        const newChatList: ChatItem[] = generateNewChatListWithOpenStatement(notSyncToStateIntroduction, notSyncToStateInputs)
+        const newChatList: ChatItem[] = generateNewChatListWithOpenStatement()
 
         data.forEach((item: any) => {
           newChatList.push({
@@ -593,6 +609,22 @@ const Main: FC<IMainProps> = () => {
   if (!APP_ID || !APP_INFO || !promptConfig)
     return <Loading type='app' />
 
+  if (!isRegistered) {
+    return (
+      <div className='bg-gray-100'>
+        <Header
+          title={APP_INFO.title}
+          isMobile={isMobile}
+          onShowSideBar={showSidebar}
+          onCreateNewChat={() => handleConversationIdChange('-1')}
+        />
+        <div className="flex justify-center items-center h-[calc(100vh_-_3rem)] bg-white">
+          <StudentForm />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className='bg-gray-100'>
       <Header
@@ -601,56 +633,50 @@ const Main: FC<IMainProps> = () => {
         onShowSideBar={showSidebar}
         onCreateNewChat={() => handleConversationIdChange('-1')}
       />
-      {!isRegistered ? (
-        <div className="flex justify-center items-center h-[calc(100vh_-_3rem)] bg-white">
-          <StudentForm />
-        </div>
-      ) : (
-        <div className="flex rounded-t-2xl bg-white overflow-hidden">
-          {/* sidebar */}
-          {!isMobile && renderSidebar()}
-          {isMobile && isShowSidebar && (
-            <div className='fixed inset-0 z-50'
-              style={{ backgroundColor: 'rgba(35, 56, 118, 0.2)' }}
-              onClick={hideSidebar}
-            >
-              <div className='inline-block' onClick={e => e.stopPropagation()}>
-                {renderSidebar()}
-              </div>
+      <div className="flex rounded-t-2xl bg-white overflow-hidden">
+        {/* sidebar */}
+        {!isMobile && renderSidebar()}
+        {isMobile && isShowSidebar && (
+          <div className='fixed inset-0 z-50'
+            style={{ backgroundColor: 'rgba(35, 56, 118, 0.2)' }}
+            onClick={hideSidebar}
+          >
+            <div className='inline-block' onClick={e => e.stopPropagation()}>
+              {renderSidebar()}
             </div>
-          )}
-          {/* main */}
-          <div className='flex-grow flex flex-col h-[calc(100vh_-_3rem)] overflow-y-auto'>
-            <ConfigSence
-              conversationName={conversationName}
-              hasSetInputs={hasSetInputs}
-              isPublicVersion={isShowPrompt}
-              siteInfo={APP_INFO}
-              promptConfig={promptConfig}
-              onStartChat={handleStartChat}
-              canEditInputs={canEditInputs}
-              savedInputs={currInputs as Record<string, any>}
-              onInputsChange={setCurrInputs}
-            ></ConfigSence>
-
-            {
-              hasSetInputs && (
-                <div className='relative grow h-[200px] pc:w-[794px] max-w-full mobile:w-full pb-[66px] mx-auto mb-3.5 overflow-hidden'>
-                  <div className='h-full overflow-y-auto' ref={chatListDomRef}>
-                    <Chat
-                      chatList={chatList}
-                      onSend={handleSend}
-                      onFeedback={handleFeedback}
-                      isResponding={isResponding}
-                      checkCanSend={checkCanSend}
-                      visionConfig={visionConfig}
-                    />
-                  </div>
-                </div>)
-            }
           </div>
+        )}
+        {/* main */}
+        <div className='flex-grow flex flex-col h-[calc(100vh_-_3rem)] overflow-y-auto'>
+          <ConfigSence
+            conversationName={conversationName}
+            hasSetInputs={hasSetInputs}
+            isPublicVersion={isShowPrompt}
+            siteInfo={APP_INFO}
+            promptConfig={promptConfig}
+            onStartChat={handleStartChat}
+            canEditInputs={canEditInputs}
+            savedInputs={currInputs as Record<string, any>}
+            onInputsChange={setCurrInputs}
+          ></ConfigSence>
+
+          {
+            hasSetInputs && (
+              <div className='relative grow h-[200px] pc:w-[794px] max-w-full mobile:w-full pb-[66px] mx-auto mb-3.5 overflow-hidden'>
+                <div className='h-full overflow-y-auto' ref={chatListDomRef}>
+                  <Chat
+                    chatList={chatList}
+                    onSend={handleSend}
+                    onFeedback={handleFeedback}
+                    isResponding={isResponding}
+                    checkCanSend={checkCanSend}
+                    visionConfig={visionConfig}
+                  />
+                </div>
+              </div>)
+          }
         </div>
-      )}
+      </div>
     </div>
   )
 }
