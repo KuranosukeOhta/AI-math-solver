@@ -3,7 +3,6 @@ import type { FC } from 'react'
 import React, { useEffect, useRef, useState } from 'react'
 import cn from 'classnames'
 import { useTranslation } from 'react-i18next'
-import Textarea from 'rc-textarea'
 import s from './style.module.css'
 import Answer from './answer'
 import Question from './question'
@@ -16,6 +15,11 @@ import ChatImageUploader from '@/app/components/base/image-uploader/chat-image-u
 import ImageList from '@/app/components/base/image-uploader/image-list'
 import { useImageFiles } from '@/app/components/base/image-uploader/hooks'
 import { useTokenRecorder } from '@/app/hooks/use-token-recorder'
+import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { PaperPlaneIcon } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
 // エラーメッセージの定数
 const ERROR_MESSAGES = {
@@ -62,7 +66,7 @@ const Chat: FC<IChatProps> = ({
   const { recordTokenUsage } = useTokenRecorder()
 
   const [query, setQuery] = React.useState('')
-  const handleContentChange = (e: any) => {
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
     setQuery(value)
   }
@@ -73,7 +77,7 @@ const Chat: FC<IChatProps> = ({
 
   const valid = () => {
     if (!query || query.trim() === '') {
-      logError('Message cannot be empty')
+      logError('メッセージを入力してください')
       return false
     }
     return true
@@ -130,7 +134,7 @@ const Chat: FC<IChatProps> = ({
     }
   }
 
-  const handleKeyUp = (e: any) => {
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.code === 'Enter') {
       e.preventDefault()
       // prevent send message when using input method enter
@@ -139,7 +143,7 @@ const Chat: FC<IChatProps> = ({
     }
   }
 
-  const handleKeyDown = (e: any) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     isUseInputMethod.current = e.nativeEvent.isComposing
     if (e.code === 'Enter' && !e.shiftKey) {
       setQuery(query.replace(/\n$/, ''))
@@ -150,7 +154,7 @@ const Chat: FC<IChatProps> = ({
   return (
     <div className={cn(!feedbackDisabled && 'px-3.5', 'h-full')}>
       {/* Chat List */}
-      <div className="h-full space-y-[30px]">
+      <div className="h-full space-y-[30px] pb-24">
         {chatList.map((item) => {
           if (item.isAnswer) {
             const isLast = item.id === chatList[chatList.length - 1].id
@@ -175,57 +179,59 @@ const Chat: FC<IChatProps> = ({
       </div>
       {
         !isHideSendInput && (
-          <div className={cn(!feedbackDisabled && '!left-3.5 !right-3.5', 'absolute z-10 bottom-0 left-0 right-0')}>
-            <div className='p-[5.5px] max-h-[150px] bg-white border-[1.5px] border-gray-200 rounded-xl overflow-y-auto'>
-              {
-                visionConfig?.enabled && (
-                  <>
-                    <div className='absolute bottom-2 left-2 flex items-center'>
-                      <ChatImageUploader
-                        settings={visionConfig}
-                        onUpload={onUpload}
-                        disabled={files.length >= visionConfig.number_limits}
-                      />
-                      <div className='mx-1 w-[1px] h-4 bg-black/5' />
-                    </div>
-                    <div className='pl-[52px]'>
-                      <ImageList
-                        list={files}
-                        onRemove={onRemove}
-                        onReUpload={onReUpload}
-                        onImageLinkLoadSuccess={onImageLinkLoadSuccess}
-                        onImageLinkLoadError={onImageLinkLoadError}
-                      />
-                    </div>
-                  </>
-                )
-              }
-              <Textarea
-                className={`
-                  block w-full px-2 pr-[118px] py-[7px] leading-5 max-h-none text-sm text-gray-700 outline-none appearance-none resize-none
-                  ${visionConfig?.enabled && 'pl-12'}
-                `}
-                value={query}
-                onChange={handleContentChange}
-                onKeyUp={handleKeyUp}
-                onKeyDown={handleKeyDown}
-                autoSize
-              />
-              <div className="absolute bottom-2 right-2 flex items-center h-8">
-                <div className={`${s.count} mr-4 h-5 leading-5 text-sm bg-gray-50 text-gray-500`}>{query.trim().length}</div>
-                <Tooltip
-                  selector='send-tip'
-                  htmlContent={
-                    <div>
-                      <div>{t('common.operation.send')} Enter</div>
-                      <div>{t('common.operation.lineBreak')} Shift Enter</div>
-                    </div>
-                  }
-                >
-                  <div className={`${s.sendBtn} w-8 h-8 cursor-pointer rounded-md`} onClick={handleSend}></div>
-                </Tooltip>
+          <div className={cn(!feedbackDisabled && '!left-3.5 !right-3.5', 'fixed z-10 bottom-6 left-0 right-0 max-w-7xl mx-auto px-4')}>
+            <Card className="border shadow-md p-2">
+              {visionConfig?.enabled && (
+                <div className="mb-2 flex items-center">
+                  <ChatImageUploader
+                    settings={visionConfig}
+                    onUpload={onUpload}
+                    disabled={files.length >= visionConfig.number_limits}
+                  />
+                  <div className="mx-2 w-[1px] h-4 bg-border" />
+                  <ImageList
+                    list={files}
+                    onRemove={onRemove}
+                    onReUpload={onReUpload}
+                    onImageLinkLoadSuccess={onImageLinkLoadSuccess}
+                    onImageLinkLoadError={onImageLinkLoadError}
+                  />
+                </div>
+              )}
+              <div className="relative">
+                <Textarea
+                  className="min-h-[60px] pr-24 resize-none focus-visible:ring-1 focus-visible:ring-primary"
+                  placeholder="メッセージを入力..."
+                  value={query}
+                  onChange={handleContentChange}
+                  onKeyUp={handleKeyUp}
+                  onKeyDown={handleKeyDown}
+                />
+                <div className="absolute bottom-2 right-2 flex items-center space-x-2">
+                  <Badge variant="outline" className="h-6">
+                    {query.trim().length}
+                  </Badge>
+                  <Tooltip
+                    selector="send-tip"
+                    htmlContent={
+                      <div>
+                        <div>{t('common.operation.send')} Enter</div>
+                        <div>{t('common.operation.lineBreak')} Shift + Enter</div>
+                      </div>
+                    }
+                  >
+                    <Button
+                      size="icon"
+                      className="h-8 w-8 rounded-full"
+                      onClick={handleSend}
+                      disabled={isResponding}
+                    >
+                      <PaperPlaneIcon className="h-4 w-4" />
+                    </Button>
+                  </Tooltip>
+                </div>
               </div>
-            </div>
+            </Card>
           </div>
         )
       }
