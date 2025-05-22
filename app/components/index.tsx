@@ -52,36 +52,6 @@ const Main: FC<IMainProps> = () => {
     transfer_methods: [TransferMethod.local_file],
   })
 
-  // 学生情報が登録されているかチェック
-  if (!isRegistered) {
-    return (
-      <div className='bg-gray-100 min-h-screen flex flex-col'>
-        <Header
-          title={APP_INFO?.title || 'AI Math Solver'}
-          isMobile={isMobile}
-          onShowSideBar={() => { }}
-          onCreateNewChat={() => { }}
-        />
-        <div className="flex-1 flex items-center justify-center p-4">
-          <StudentForm />
-        </div>
-      </div>
-    )
-  }
-
-  useEffect(() => {
-    if (APP_INFO?.title)
-      document.title = `${APP_INFO.title} - Powered by Dify`
-  }, [APP_INFO?.title])
-
-  // onData change thought (the produce obj). https://github.com/immerjs/immer/issues/576
-  useEffect(() => {
-    setAutoFreeze(false)
-    return () => {
-      setAutoFreeze(true)
-    }
-  }, [])
-
   /*
   * conversation info
   */
@@ -104,21 +74,29 @@ const Main: FC<IMainProps> = () => {
 
   const [conversationIdChangeBecauseOfNew, setConversationIdChangeBecauseOfNew, getConversationIdChangeBecauseOfNew] = useGetState(false)
   const [isChatStarted, { setTrue: setChatStarted, setFalse: setChatNotStarted }] = useBoolean(false)
-  const handleStartChat = (inputs: Record<string, any>) => {
-    createNewChat()
-    setConversationIdChangeBecauseOfNew(true)
-    setCurrInputs(inputs)
-    setChatStarted()
-    // parse variables in introduction
-    setChatList(generateNewChatListWithOpenStatement('', inputs))
-  }
-  const hasSetInputs = (() => {
-    if (!isNewConversation)
-      return true
 
-    return isChatStarted
-  })()
+  /*
+  * chat info. chat is under conversation.
+  */
+  const [chatList, setChatList, getChatList] = useGetState<ChatItem[]>([])
+  const chatListDomRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    if (APP_INFO?.title)
+      document.title = `${APP_INFO.title} - Powered by Dify`
+  }, [APP_INFO?.title])
+
+  // onData change thought (the produce obj). https://github.com/immerjs/immer/issues/576
+  useEffect(() => {
+    setAutoFreeze(false)
+    return () => {
+      setAutoFreeze(true)
+    }
+  }, [])
+
+  /*
+  * conversation info
+  */
   const conversationName = currConversationInfo?.name || t('app.chat.newChatDefaultName') as string
   const conversationIntroduction = currConversationInfo?.introduction || ''
 
@@ -187,53 +165,6 @@ const Main: FC<IMainProps> = () => {
     // trigger handleConversationSwitch
     setCurrConversationId(id, APP_ID)
     hideSidebar()
-  }
-
-  /*
-  * chat info. chat is under conversation.
-  */
-  const [chatList, setChatList, getChatList] = useGetState<ChatItem[]>([])
-  const chatListDomRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    // scroll to bottom
-    if (chatListDomRef.current)
-      chatListDomRef.current.scrollTop = chatListDomRef.current.scrollHeight
-  }, [chatList, currConversationId])
-  // user can not edit inputs if user had send message
-  const canEditInputs = !chatList.some(item => item.isAnswer === false) && isNewConversation
-  const createNewChat = () => {
-    // if new chat is already exist, do not create new chat
-    if (conversationList.some(item => item.id === '-1'))
-      return
-
-    setConversationList(produce(conversationList, (draft) => {
-      draft.unshift({
-        id: '-1',
-        name: t('app.chat.newChatDefaultName'),
-        inputs: newConversationInputs,
-        introduction: conversationIntroduction,
-      })
-    }))
-  }
-
-  // sometime introduction is not applied to state
-  const generateNewChatListWithOpenStatement = (introduction?: string, inputs?: Record<string, any> | null) => {
-    let calculatedIntroduction = introduction || conversationIntroduction || ''
-    const calculatedPromptVariables = inputs || currInputs || null
-    if (calculatedIntroduction && calculatedPromptVariables)
-      calculatedIntroduction = replaceVarWithValues(calculatedIntroduction, promptConfig?.prompt_variables || [], calculatedPromptVariables)
-
-    const openStatement = {
-      id: `${Date.now()}`,
-      content: calculatedIntroduction,
-      isAnswer: true,
-      feedbackDisabled: true,
-      isOpeningStatement: isShowPrompt,
-    }
-    if (calculatedIntroduction)
-      return [openStatement]
-
-    return []
   }
 
   // init
