@@ -2,7 +2,7 @@ import './styles/globals.css'
 import './styles/markdown.css'
 import { Inter } from 'next/font/google'
 import type { Metadata } from 'next'
-import { I18nextProvider } from '@/i18n/i18nextProvider'
+import { I18nextProvider } from './i18n/i18nextProvider'
 import { StudentProvider } from './context/student-context'
 
 const inter = Inter({ subsets: ['latin'] })
