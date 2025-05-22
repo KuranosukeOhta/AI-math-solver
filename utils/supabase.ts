@@ -45,23 +45,22 @@ export const recordTokenUsage = async (userId: string, inputTokens: number, outp
       });
 
     if (logError) {
-      console.error('トークン使用量記録エラー:', logError);
+      console.error('トークン使用量ログ記録エラー:', logError);
       return false;
     }
 
-    // ユーザーの総トークン使用量を更新
+    // ユーザーの総トークン使用量とコストをRPCでアトミックに更新
+    const totalTokens = inputTokens + outputTokens;
     const totalCost = (inputTokens * TOKEN_PRICE.INPUT) + (outputTokens * TOKEN_PRICE.OUTPUT);
-    
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({
-        token_usage: supabase.rpc('increment', { x: inputTokens + outputTokens }),
-        estimated_cost: supabase.rpc('increment_float', { x: totalCost })
-      })
-      .eq('id', userId);
 
-    if (updateError) {
-      console.error('ユーザーのトークン使用量更新エラー:', updateError);
+    const { error: rpcError } = await supabase.rpc('increment_token_usage_and_cost', {
+      user_id_input: userId,
+      token_amount: totalTokens,
+      cost_amount: totalCost,
+    });
+
+    if (rpcError) {
+      console.error('ユーザーのトークン使用量・コスト更新エラー (RPC):', rpcError);
       return false;
     }
 

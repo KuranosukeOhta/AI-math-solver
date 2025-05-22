@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useEffect, useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
 
 interface TokenUsageData {
     id: string
@@ -17,24 +16,32 @@ function AdminContent() {
     const [tokenUsageData, setTokenUsageData] = useState<TokenUsageData[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const searchParams = useSearchParams()
-    const adminKey = searchParams.get('key')
-
-    // この簡易的なキーで管理者ページへのアクセスを制限
-    const ADMIN_KEY = 'admin123'
 
     useEffect(() => {
-        if (adminKey !== ADMIN_KEY) {
-            setError('アクセス権限がありません')
-            setIsLoading(false)
-            return
-        }
-
         const fetchTokenUsage = async () => {
             try {
-                const response = await fetch('/api/admin/token-usage')
+                // 環境変数からAPIキーを取得 (NEXT_PUBLIC_ が必要)
+                const adminApiKey = process.env.NEXT_PUBLIC_ADMIN_API_KEY;
+
+                if (!adminApiKey) {
+                    setError('管理者APIキーが設定されていません');
+                    setIsLoading(false);
+                    return;
+                }
+
+                const response = await fetch('/api/admin/token-usage', {
+                    headers: {
+                        'Authorization': `Bearer ${adminApiKey}`
+                    }
+                });
+
                 if (!response.ok) {
-                    throw new Error('データの取得に失敗しました')
+                    // 401エラーの場合は認証失敗メッセージを表示
+                    if (response.status === 401) {
+                        throw new Error('アクセス権限がありません');
+                    } else {
+                        throw new Error('データの取得に失敗しました');
+                    }
                 }
                 const data = await response.json()
                 if (data.success) {
@@ -50,7 +57,7 @@ function AdminContent() {
         }
 
         fetchTokenUsage()
-    }, [adminKey])
+    }, [])
 
     // 合計値の計算
     const totalTokens = tokenUsageData.reduce((sum, item) => sum + item.token_usage, 0)

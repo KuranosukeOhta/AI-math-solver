@@ -3,6 +3,17 @@ import { supabase } from '@/utils/supabase';
 
 export async function GET(request: NextRequest) {
   try {
+    // 認証キーの確認
+    const adminApiKey = process.env.ADMIN_API_KEY;
+    const requestApiKey = request.headers.get('Authorization');
+
+    if (!adminApiKey || !requestApiKey || requestApiKey !== `Bearer ${adminApiKey}`) {
+      return NextResponse.json(
+        { success: false, message: '認証に失敗しました' }, 
+        { status: 401 }
+      );
+    }
+
     // トークン使用量の集計
     const { data: tokenUsage, error: tokenUsageError } = await supabase
       .from('users')

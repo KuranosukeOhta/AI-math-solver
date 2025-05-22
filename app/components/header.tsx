@@ -5,6 +5,7 @@ import {
   PencilSquareIcon,
 } from '@heroicons/react/24/solid'
 import AppIcon from '@/app/components/base/app-icon'
+import { useStudent } from '@/app/context/student-context'
 
 export type IHeaderProps = {
   title: string
@@ -19,6 +20,8 @@ const Header: FC<IHeaderProps> = ({
   onShowSideBar,
   onCreateNewChat,
 }) => {
+  const { isRegistered, clearStudentInfo } = useStudent()
+
   return (
     <div className="shrink-0 flex items-center justify-between h-12 px-3 bg-gray-100">
       {isMobile
@@ -44,6 +47,14 @@ const Header: FC<IHeaderProps> = ({
           </div>
         )}
       </div>
+      {isRegistered && (
+        <button
+          className="ml-4 px-3 py-1 text-sm text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none"
+          onClick={clearStudentInfo}
+        >
+          ログアウト
+        </button>
+      )}
     </div>
   )
 }
