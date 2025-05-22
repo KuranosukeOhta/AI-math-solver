@@ -17,6 +17,14 @@ import ImageList from '@/app/components/base/image-uploader/image-list'
 import { useImageFiles } from '@/app/components/base/image-uploader/hooks'
 import { useTokenRecorder } from '@/app/hooks/use-token-recorder'
 
+// エラーメッセージの定数
+const ERROR_MESSAGES = {
+  NETWORK: 'ネットワークエラーが発生しました。接続を確認してください。',
+  SERVER: 'サーバーエラーが発生しました。しばらく経ってからお試しください。',
+  UNAUTHORIZED: '認証エラーが発生しました。',
+  UNKNOWN: '予期せぬエラーが発生しました。'
+}
+
 export type IChatProps = {
   chatList: ChatItem[]
   /**

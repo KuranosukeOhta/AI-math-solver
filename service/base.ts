@@ -1,4 +1,4 @@
-import { API_PREFIX, APP_ID, API_KEY } from '@/config'
+import { API_PREFIX, APP_ID, API_KEY, API_URL } from '@/config'
 import Toast from '@/app/components/base/toast'
 import type { AnnotationReply, MessageEnd, MessageReplace, ThoughtItem } from '@/app/components/chat/type'
 import type { VisionFile } from '@/types/app'
@@ -10,6 +10,15 @@ const ContentType = {
   stream: 'text/event-stream',
   form: 'application/x-www-form-urlencoded; charset=UTF-8',
   download: 'application/octet-stream', // for download
+}
+
+// DifyのAPI認証ヘッダーを追加
+const getDifyAuthHeaders = () => {
+  return {
+    'Content-Type': ContentType.json,
+    'Authorization': `Bearer ${API_KEY}`,
+    'App-Id': APP_ID || '',
+  }
 }
 
 const baseOptions = {
@@ -377,40 +386,66 @@ export const ssePost = (
     onError,
   }: IOtherOptions,
 ) => {
+  // Dify API認証ヘッダーを追加
+  const difyAuthHeaders = getDifyAuthHeaders()
+  
   const options = Object.assign({}, baseOptions, {
     method: 'POST',
+    headers: difyAuthHeaders,
   }, fetchOptions)
 
   const urlPrefix = API_PREFIX
   const urlWithPrefix = `${urlPrefix}${url.startsWith('/') ? url : `/${url}`}`
 
+  console.log(`[DEBUG] Sending request to: ${urlWithPrefix}`)
+  console.log(`[DEBUG] Request headers:`, options.headers)
+  
   const { body } = options
-  if (body)
+  if (body) {
     options.body = JSON.stringify(body)
+    console.log(`[DEBUG] Request body:`, body)
+  }
 
   globalThis.fetch(urlWithPrefix, options)
     .then((res: any) => {
+      console.log(`[DEBUG] Response status:`, res.status)
+      
       if (!/^(2|3)\d{2}$/.test(res.status)) {
-        // eslint-disable-next-line no-new
-        new Promise(() => {
-          res.json().then((data: any) => {
-            Toast.notify({ type: 'error', message: data.message || 'Server Error' })
-          })
+        // Clone the response for reading the error details
+        const errorResponse = res.clone()
+        
+        // Read and log the error details
+        errorResponse.text().then((text: string) => {
+          console.error(`[DEBUG] Error response:`, text)
+          try {
+            const errorData = JSON.parse(text)
+            Toast.notify({ type: 'error', message: errorData.message || 'Server Error' })
+          } catch (e) {
+            console.error(`[DEBUG] Failed to parse error response:`, e)
+            Toast.notify({ type: 'error', message: `Server Error (${res.status})` })
+          }
+        }).catch((e: any) => {
+          console.error(`[DEBUG] Failed to read error response:`, e)
+          Toast.notify({ type: 'error', message: `Server Error (${res.status})` })
         })
+        
         onError?.()
         return
       }
-      return handleStream(res, (str: string, isFirstMessage: boolean, moreInfo: IOnDataMoreInfo) => {
+      
+      return handleStream(res, ((str: string, isFirstMessage: boolean, moreInfo: IOnDataMoreInfo) => {
         if (moreInfo.errorMessage) {
+          console.error(`[DEBUG] Stream error:`, moreInfo.errorMessage)
           Toast.notify({ type: 'error', message: moreInfo.errorMessage })
           return
         }
-        onData?.(str, isFirstMessage, moreInfo)
-      }, () => {
+        onData?.(str, isFirstMessage, moreInfo as any)
+      }) as IOnData, () => {
         onCompleted?.()
       }, onThought, onMessageEnd, onMessageReplace, onFile, onWorkflowStarted, onWorkflowFinished, onNodeStarted, onNodeFinished)
     }).catch((e) => {
-      Toast.notify({ type: 'error', message: e })
+      console.error(`[DEBUG] Request error:`, e)
+      Toast.notify({ type: 'error', message: e?.message || 'Network Error' })
       onError?.()
     })
 }
@@ -420,73 +455,121 @@ export const request = (url: string, options = {}, otherOptions?: IOtherOptions)
 }
 
 export const get = (url: string, { params }: { params?: Record<string, any> }) => {
-  const urlInstance = new URL(`${API_PREFIX}/${url}`)
-  if (params) {
-    Object.keys(params).forEach(key => {
-      if (params[key] !== undefined && params[key] !== null)
-        urlInstance.searchParams.append(key, params[key])
-    })
-  }
-  const res = fetch(urlInstance, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'App-Id': APP_ID || '',
-      'Api-Key': API_KEY || '',
-    },
-  })
-  return handleStream(res as unknown as Response, (str: string, isFirstMessage: boolean, moreInfo: IOnDataMoreInfo) => {
-    if (moreInfo.errorMessage) {
-      Toast.notify({ type: 'error', message: moreInfo.errorMessage })
+  // CORSエラー回避のため、すべてのDify APIリクエストをサーバーサイドプロキシ経由に変更
+  if (url.startsWith('conversations') || url.startsWith('messages') || url.startsWith('parameters')) {
+    // Dify APIリクエストはサーバーサイドプロキシ経由に変更
+    // /api/{dify_endpoint} 形式でサーバーサイドプロキシにリクエストする
+    const apiUrl = `${window.location.origin}${API_PREFIX}/${url}`
+    const queryParams = new URLSearchParams()
+    
+    if (params) {
+      Object.keys(params).forEach(key => {
+        if (params[key] !== undefined && params[key] !== null)
+          queryParams.append(key, params[key])
+      })
     }
-  }, () => {
-    // Handle completion
-  }, (thought: any) => {
-    // Handle thought
-  }, (messageEnd: any) => {
-    // Handle message end
-  }, (messageReplace: any) => {
-    // Handle message replace
-  }, (file: any) => {
-    // Handle file
-  }, (data: any) => {
-    // Handle workflow started
-  }, (data: any) => {
-    // Handle workflow finished
-  }, (data: any) => {
-    // Handle node started
-  }, (data: any) => {
-    // Handle node finished
-  })
+    
+    const urlWithParams = queryParams.toString() ? `${apiUrl}?${queryParams}` : apiUrl
+    
+    console.log(`[DEBUG] GET Request to proxy: ${urlWithParams}`)
+    
+    return fetch(urlWithParams, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => {
+        if (!response.ok) {
+          console.error(`[DEBUG] Error response from proxy API: ${response.status}`)
+          throw new Error(`Proxy API returned ${response.status}`)
+        }
+        return response.json()
+      })
+      .catch(error => {
+        console.error(`[DEBUG] Fetch error:`, error)
+        throw error
+      })
+  } else {
+    // ローカルAPIエンドポイント用（変更なし）
+    const urlInstance = new URL(`${window.location.origin}${API_PREFIX}/${url}`)
+    if (params) {
+      Object.keys(params).forEach(key => {
+        if (params[key] !== undefined && params[key] !== null)
+          urlInstance.searchParams.append(key, params[key])
+      })
+    }
+    
+    console.log(`[DEBUG] GET Request to local API: ${urlInstance.toString()}`)
+    
+    return fetch(urlInstance)
+      .then(response => {
+        if (!response.ok) {
+          console.error(`[DEBUG] Error response from local API: ${response.status}`)
+          throw new Error(`Local API returned ${response.status}`)
+        }
+        return response.json()
+      })
+      .catch(error => {
+        console.error(`[DEBUG] Fetch error:`, error)
+        throw error
+      })
+  }
 }
 
 export const post = (url: string, { body }: { body: Record<string, any> }) => {
-  const res = fetch(`${API_PREFIX}/${url}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'App-Id': APP_ID || '',
-      'Api-Key': API_KEY || '',
-    },
-    body: JSON.stringify(body),
-  })
-  return handleStream(res as unknown as Response, (str: string, isFirstMessage: boolean, moreInfo: IOnDataMoreInfo) => {
-    if (moreInfo.errorMessage) {
-      Toast.notify({ type: 'error', message: moreInfo.errorMessage })
-    }
-  }, () => {
-    // Handle completion
-  }, (thought: any) => {
-    // Handle thought
-  }, (file: any) => {
-    // Handle file
-  }, (messageEnd: any) => {
-    // Handle message end
-  }, (messageReplace: any) => {
-    // Handle message replace
-  }, (file: any) => {
-    // Handle file
-  })
+  // CORSエラー回避のため、すべてのDify APIリクエストをサーバーサイドプロキシ経由に変更
+  if (url.startsWith('conversations') || url.startsWith('messages') || url.startsWith('parameters')) {
+    // サーバーサイドプロキシ経由でDify APIにアクセス
+    const apiUrl = `${window.location.origin}${API_PREFIX}/${url}`
+    
+    console.log(`[DEBUG] POST Request to proxy API: ${apiUrl}`)
+    console.log(`[DEBUG] Body:`, body)
+    
+    return fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+      .then(response => {
+        if (!response.ok) {
+          console.error(`[DEBUG] Error response from proxy API: ${response.status}`)
+          throw new Error(`Proxy API returned ${response.status}`)
+        }
+        return response.json()
+      })
+      .catch(error => {
+        console.error(`[DEBUG] Fetch error:`, error)
+        throw error
+      })
+  } else {
+    // ローカルAPIエンドポイント（変更なし）
+    const apiUrl = `${window.location.origin}${API_PREFIX}/${url}`
+    
+    console.log(`[DEBUG] POST Request to local API: ${apiUrl}`)
+    console.log(`[DEBUG] Body:`, body)
+    
+    return fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body),
+    })
+      .then(response => {
+        if (!response.ok) {
+          console.error(`[DEBUG] Error response from local API: ${response.status}`)
+          throw new Error(`Local API returned ${response.status}`)
+        }
+        return response.json()
+      })
+      .catch(error => {
+        console.error(`[DEBUG] Fetch error:`, error)
+        throw error
+      })
+  }
 }
 
 export const put = (url: string, options = {}, otherOptions?: IOtherOptions) => {
