@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 interface TokenUsageData {
@@ -12,7 +12,8 @@ interface TokenUsageData {
     created_at: string
 }
 
-const AdminTokenUsagePage = () => {
+// useSearchParamsを使用するコンポーネントを分離
+function AdminContent() {
     const [tokenUsageData, setTokenUsageData] = useState<TokenUsageData[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -133,6 +134,22 @@ const AdminTokenUsagePage = () => {
                 )}
             </div>
         </div>
+    )
+}
+
+// メインコンポーネント - Suspenseでラップ
+const AdminTokenUsagePage = () => {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gray-100 p-6">
+                <div className="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow">
+                    <h1 className="text-2xl font-bold mb-6">トークン使用量ダッシュボード</h1>
+                    <p>読み込み中...</p>
+                </div>
+            </div>
+        }>
+            <AdminContent />
+        </Suspense>
     )
 }
 
