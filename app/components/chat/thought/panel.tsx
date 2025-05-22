@@ -1,7 +1,9 @@
 'use client'
 import type { FC } from 'react'
 import React from 'react'
+import cn from 'classnames'
 import { useTranslation } from 'react-i18next'
+import { type Thought } from '@/types/app'
 
 type Props = {
   isRequest: boolean

@@ -1,5 +1,6 @@
-import React from 'react'
-import type { FC } from 'react'
+'use client'
+
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ChatBubbleOvalLeftEllipsisIcon,

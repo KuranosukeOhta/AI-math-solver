@@ -1,5 +1,7 @@
+'use client'
+
 import type { FC } from 'react'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Uploader from './uploader'
 import ImageLinkInput from './image-link-input'

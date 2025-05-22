@@ -1,6 +1,6 @@
 'use client'
 import type { FC } from 'react'
-import React from 'react'
+import React, { useRef, useState } from 'react'
 import { HandThumbDownIcon, HandThumbUpIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
 import LoadingAnim from '../loading-anim'
@@ -14,6 +14,7 @@ import Tooltip from '@/app/components/base/tooltip'
 import WorkflowProcess from '@/app/components/workflow/workflow-process'
 import { Markdown } from '@/app/components/base/markdown'
 import type { Emoji } from '@/types/tools'
+import { CopyToClipboard } from 'react-copy-to-clipboard'
 
 const OperationBtn = ({ innerContent, onClick, className }: { innerContent: React.ReactNode; onClick?: () => void; className?: string }) => (
   <div

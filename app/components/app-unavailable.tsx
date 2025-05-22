@@ -1,6 +1,7 @@
 'use client'
 import type { FC } from 'react'
 import React from 'react'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/solid'
 import { useTranslation } from 'react-i18next'
 
 type IAppUnavailableProps = {
