@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import type { Metadata } from 'next'
 import { I18nextProvider } from './i18n/i18nextProvider'
 import { StudentProvider } from './context/student-context'
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -23,6 +24,7 @@ export default function RootLayout({
         <I18nextProvider>
           <StudentProvider>
             {children}
+            <Toaster />
           </StudentProvider>
         </I18nextProvider>
       </body>

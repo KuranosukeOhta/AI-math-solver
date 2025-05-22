@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { client, getInfo, logAPIRequest, logAPIResponse } from '@/app/api/utils/common'
+import { API_KEY, API_URL, APP_ID } from '@/config'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,63 +12,119 @@ export async function POST(request: NextRequest) {
       files,
       conversation_id: conversationId,
       response_mode: responseMode,
+      user
     } = body
     
-    const { user } = getInfo(request)
-    
-    // デバッグ用にリクエスト情報をログ出力
-    logAPIRequest('/chat-messages', 'POST', { 
-      inputs, query, user, responseMode, conversationId, files 
-    })
-    
-    console.log('[DEBUG] Dify API呼び出し直前のパラメータ:', {
-      inputs, 
-      query, 
-      user, 
-      stream: responseMode === 'streaming', // 文字列を真偽値に変換
-      conversationId,
-      files
-    })
-    
-    // Dify APIにリクエスト送信 - 正しいパラメータ順序とストリーミング設定で呼び出し
-    const res = await client.createChatMessage(
-      inputs,
-      query, 
-      user, 
-      responseMode === 'streaming', // 'streaming'という文字列ではなくtrueに変換
-      conversationId, 
-      files
-    )
-    
-    // デバッグ用にレスポンス情報をログ出力
-    logAPIResponse('/chat-messages', 200, res)
-    
-    return new Response(res.data)
-  } catch (error: any) {
-    console.error('API応答エラー', error)
-    
-    // エラーメッセージとスタックトレースを詳細にログ出力
-    if (error.response) {
-      console.error('[DEBUG] Error response:', error.response)
-      console.error('[DEBUG] Error status:', error.response.status)
-      console.error('[DEBUG] Error data:', error.response.data)
-      
-      // リクエスト情報も表示
-      if (error.config) {
-        console.error('[DEBUG] Failed request URL:', error.config.url)
-        console.error('[DEBUG] Failed request method:', error.config.method)
-        console.error('[DEBUG] Failed request headers:', error.config.headers)
-        console.error('[DEBUG] Failed request data:', error.config.data)
-      }
-    } else {
-      console.error('[DEBUG] Error details:', error.message, error.stack)
+    // 必須パラメータのチェック
+    if (!query && !inputs) {
+      return NextResponse.json(
+        { error: true, message: 'query or inputs is required' },
+        { status: 400 }
+      )
     }
     
-    // クライアントにエラー情報を返す
-    return NextResponse.json({ 
-      error: true, 
-      message: error.message || 'チャットメッセージの作成中にエラーが発生しました',
-      details: error.response?.data?.error || error.response?.data || null
-    }, { status: 500 })
+    // Dify APIへのリクエストデータ作成
+    const difyRequestBody = {
+      inputs,
+      query,
+      user,
+      response_mode: responseMode || 'streaming',
+    }
+    
+    // オプションのパラメータ追加
+    if (conversationId) {
+      difyRequestBody.conversation_id = conversationId
+    }
+    
+    if (files && files.length > 0) {
+      difyRequestBody.files = files
+    }
+    
+    console.log('[DEBUG Proxy] Chat Message Request to Dify:', difyRequestBody)
+    
+    // Dify APIのエンドポイント
+    const difyUrl = `${API_URL}/chat-messages`
+    
+    // リクエストヘッダー
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${API_KEY}`,
+      'App-Id': APP_ID
+    }
+    
+    // SSEレスポンスを返すためのストリームを作成
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          // Dify APIにリクエスト
+          const response = await fetch(difyUrl, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(difyRequestBody),
+          })
+          
+          if (!response.ok) {
+            const errorText = await response.text()
+            console.error('[DEBUG Proxy] Dify API error:', response.status, errorText)
+            
+            // エラーイベントをクライアントに送信
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+              status: response.status,
+              message: `Dify API returned an error: ${response.status}`,
+              details: errorText
+            })}\n\n`))
+            
+            controller.close()
+            return
+          }
+          
+          // SSEレスポンスをクライアントに転送
+          const reader = response.body?.getReader()
+          if (!reader) {
+            throw new Error('Response body is null')
+          }
+          
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+            
+            // 受信したデータをそのままクライアントに転送
+            controller.enqueue(value)
+          }
+          
+          controller.close()
+        } catch (error: any) {
+          console.error('[DEBUG Proxy] Stream error:', error)
+          
+          // エラーイベントをクライアントに送信
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+            status: 500,
+            message: `Error in chat message proxy: ${error.message}`
+          })}\n\n`))
+          
+          controller.close()
+        }
+      }
+    })
+    
+    // SSEレスポンスを返す
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    })
+  } catch (error: any) {
+    console.error('[DEBUG Proxy] Error in chat-messages proxy:', error)
+    return NextResponse.json(
+      { 
+        error: true, 
+        message: error.message || 'Failed to process request',
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      },
+      { status: 500 }
+    )
   }
 }

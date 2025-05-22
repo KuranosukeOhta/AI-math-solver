@@ -1,64 +1,110 @@
 'use client'
 
-import React, { useState, ChangeEvent } from 'react'
+import { useState, useEffect } from 'react'
 import { useStudent } from '@/app/context/student-context'
-import Toast from '@/app/components/base/toast'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/hooks/use-toast'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import * as z from 'zod'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import { ChevronDown, ChevronUp, AlertCircle } from 'lucide-react'
 
 interface StudentFormProps {
     onRegister?: () => void
 }
 
+interface DebugInfo {
+    [key: string]: unknown
+}
+
+// フォームのバリデーションスキーマ
+const formSchema = z.object({
+    studentId: z.string()
+        .min(1, { message: '学番は必須です' })
+        .regex(/^[a-zA-Z]{2}\d{5}$/, {
+            message: '学番は2文字のアルファベットと5桁の数字（例: ab12345）の形式で入力してください'
+        }),
+    name: z.string().min(1, { message: '名前は必須です' })
+})
+
+type FormValues = z.infer<typeof formSchema>
+
 const StudentForm: React.FC<StudentFormProps> = ({ onRegister }) => {
     console.log('StudentForm: Component rendering')
     const { setStudentInfo, isRegistered, studentId: savedStudentId, name: savedName } = useStudent()
     console.log('StudentForm: isRegistered =', isRegistered)
-    const [studentId, setStudentId] = useState<string>(savedStudentId || '')
-    const [name, setName] = useState<string>(savedName || '')
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [error, setError] = useState<string>('')
-    const [debugInfo, setDebugInfo] = useState<any>(null)
-    const { notify } = Toast
+    const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null)
+    const { toast } = useToast()
     const router = useRouter()
 
-    // デバッグモード
+    // デバッグモードをオフに設定
     const [showDebug, setShowDebug] = useState<boolean>(false)
+
+    // フォームの初期化
+    const form = useForm<FormValues>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            studentId: savedStudentId || '',
+            name: savedName || ''
+        }
+    })
+
+    // 両方のフィールドが入力されているかチェック
+    const [isFormFilled, setIsFormFilled] = useState<boolean>(false)
+
+    useEffect(() => {
+        // フォームの値が変更されたときにチェック
+        const subscription = form.watch((values) => {
+            setIsFormFilled(!!values.studentId && !!values.name)
+        })
+        return () => subscription.unsubscribe()
+    }, [form.watch])
 
     const toggleDebug = () => {
         setShowDebug(!showDebug)
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
+    const handleSubmit = async (values: FormValues) => {
         console.log('StudentForm: handleSubmit started')
         setError('')
         setDebugInfo(null)
 
-        if (!studentId || !name) {
-            setError('学番と名前を入力してください')
-            return
-        }
-
-        // 学番の形式チェック（2文字のアルファベット + 5桁の数字）
-        const regex = /^[a-zA-Z]{2}\d{5}$/
-        if (!regex.test(studentId)) {
-            setError('学番は2文字のアルファベットと5桁の数字（例: ab12345）の形式で入力してください')
-            return
-        }
-
         setIsLoading(true)
         try {
             console.log('StudentForm: Calling setStudentInfo')
-            const response = await setStudentInfo(studentId, name)
+            const response = await setStudentInfo(values.studentId, values.name)
             console.log('StudentForm: setStudentInfo response:', response)
-            notify({ type: 'success', message: '登録が完了しました' })
+            toast({
+                title: "登録完了",
+                description: "登録が完了しました",
+            })
             if (onRegister) onRegister()
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('StudentForm: Error during registration:', err)
-            setError(err.message || '登録に失敗しました。もう一度お試しください。')
-            notify({ type: 'error', message: err.message || '登録に失敗しました' })
+            const errorMessage = err instanceof Error ? err.message : '登録に失敗しました。もう一度お試しください。'
+            setError(errorMessage)
+            toast({
+                variant: "destructive",
+                title: "エラー",
+                description: errorMessage,
+            })
             // デバッグ情報を保存
-            setDebugInfo(err)
+            setDebugInfo(err as DebugInfo)
         } finally {
             setIsLoading(false)
         }
@@ -78,125 +124,173 @@ const StudentForm: React.FC<StudentFormProps> = ({ onRegister }) => {
             })
             const data = await response.json()
             setDebugInfo(data)
-            notify({ type: 'info', message: 'Connection test completed' })
+            toast({
+                title: "接続テスト",
+                description: "Connection test completed",
+            })
         } catch (err) {
-            setDebugInfo(err)
-            notify({ type: 'error', message: 'Connection test failed' })
+            setDebugInfo(err as DebugInfo)
+            toast({
+                variant: "destructive",
+                title: "接続エラー",
+                description: "Connection test failed",
+            })
         } finally {
             setIsLoading(false)
         }
     }
 
     return (
-        <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-6 text-center">学生情報登録</h2>
-            <div className="mb-4 p-3 bg-green-100 text-green-800 rounded-md text-sm">
-                これは学生情報登録フォームです。学番と名前を入力して登録してください。
-            </div>
+        <Card className="w-full">
+            <CardHeader>
+                <CardTitle className="text-2xl font-bold text-center">学生情報登録</CardTitle>
+                <CardDescription className="text-center">
+                    学番と名前を入力して登録してください
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Alert className="mb-6 bg-green-50 border-green-200">
+                    <AlertCircle className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-600">
+                        これは学生情報登録フォームです。学番と名前を入力して登録してください。
+                    </AlertDescription>
+                </Alert>
 
-            {isRegistered ? (
-                <div className="text-center">
-                    <p className="mb-2">登録済みです</p>
-                    <div className="mb-4 p-4 bg-gray-50 rounded-md">
-                        <p><span className="font-semibold">学番:</span> {savedStudentId}</p>
-                        <p><span className="font-semibold">名前:</span> {savedName}</p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={handleStartAI}
-                        className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition duration-200"
-                    >
-                        AIを使い始める
-                    </button>
-                </div>
-            ) : (
-                <form onSubmit={handleSubmit}>
-                    {error && (
-                        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
-                            {error}
-                        </div>
-                    )}
-
-                    <div className="mb-4">
-                        <label htmlFor="studentId" className="block text-gray-700 font-medium mb-2">
-                            学番 <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            id="studentId"
-                            value={studentId}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setStudentId(e.target.value.toLowerCase())}
-                            placeholder="ab12345"
-                            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                            2文字のアルファベットと5桁の数字（例: ab12345）
-                        </p>
-                    </div>
-
-                    <div className="mb-6">
-                        <label htmlFor="name" className="block text-gray-700 font-medium mb-2">
-                            名前 <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            id="name"
-                            value={name}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
-                            placeholder="山田 太郎"
-                            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className={`w-full py-2 px-4 rounded-md font-medium text-white transition duration-200 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
-                            }`}
-                    >
-                        {isLoading ? '登録中...' : '登録して使い始める'}
-                    </button>
-
-                    <div className="mt-4 text-center">
-                        <button
-                            type="button"
-                            onClick={toggleDebug}
-                            className="text-xs text-gray-500 underline"
-                        >
-                            {showDebug ? 'デバッグ情報を隠す' : 'デバッグ情報を表示'}
-                        </button>
-                    </div>
-
-                    {showDebug && (
-                        <div className="mt-4">
-                            <div className="p-3 bg-gray-100 rounded-md">
-                                <h3 className="font-semibold mb-2">デバッグ情報</h3>
-                                <div className="flex space-x-2 mb-2">
-                                    <button
-                                        type="button"
-                                        onClick={testConnection}
-                                        className="text-xs bg-gray-200 hover:bg-gray-300 py-1 px-2 rounded"
-                                    >
-                                        接続テスト
-                                    </button>
+                {isRegistered ? (
+                    <div className="text-center">
+                        <p className="mb-2">登録済みです</p>
+                        <Card className="mb-6 bg-gray-50">
+                            <CardContent className="pt-6">
+                                <div className="grid gap-2">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-medium">学番:</span>
+                                        <Badge variant="outline">{savedStudentId}</Badge>
+                                    </div>
+                                    <Separator />
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-medium">名前:</span>
+                                        <span>{savedName}</span>
+                                    </div>
                                 </div>
-                                {debugInfo && (
-                                    <pre className="text-xs overflow-auto max-h-40 p-2 bg-gray-200 rounded">
-                                        {JSON.stringify(debugInfo, null, 2)}
-                                    </pre>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </form>
-            )}
+                            </CardContent>
+                        </Card>
+                        <Button
+                            onClick={handleStartAI}
+                            className="w-full"
+                        >
+                            AIを使い始める
+                        </Button>
+                    </div>
+                ) : (
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                            {error && (
+                                <Alert variant="destructive" className="mb-4">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <AlertDescription>
+                                        {error}
+                                    </AlertDescription>
+                                </Alert>
+                            )}
 
-            <p className="mt-4 text-xs text-gray-500 text-center">
-                入力いただいた情報は、使用状況の記録と課金計算のためだけに使用されます。
-            </p>
-        </div>
+                            <FormField
+                                control={form.control}
+                                name="studentId"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>学番 <span className="text-red-500">*</span></FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="ab12345"
+                                                {...field}
+                                                onChange={(e) => field.onChange(e.target.value.toLowerCase())}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            2文字のアルファベットと5桁の数字（例: ab12345）
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>名前 <span className="text-red-500">*</span></FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="山田 太郎" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <Button
+                                type="submit"
+                                disabled={isLoading}
+                                className={`w-full ${isFormFilled
+                                    ? 'bg-primary hover:bg-primary/90 shadow-md transition-all'
+                                    : 'bg-primary/70'
+                                    }`}
+                            >
+                                {isLoading ? '登録中...' : '登録して使い始める'}
+                            </Button>
+
+                            <Collapsible className="w-full">
+                                <div className="flex items-center justify-center">
+                                    <CollapsibleTrigger asChild>
+                                        <Button variant="link" size="sm" className="text-xs text-muted-foreground">
+                                            {showDebug ? (
+                                                <>
+                                                    <ChevronUp className="h-3 w-3 mr-1" />
+                                                    デバッグ情報を隠す
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <ChevronDown className="h-3 w-3 mr-1" />
+                                                    デバッグ情報を表示
+                                                </>
+                                            )}
+                                        </Button>
+                                    </CollapsibleTrigger>
+                                </div>
+                                <CollapsibleContent>
+                                    <Card className="mt-4 bg-muted/50">
+                                        <CardHeader className="py-2">
+                                            <CardTitle className="text-sm">デバッグ情報</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="flex space-x-2 mb-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={testConnection}
+                                                >
+                                                    接続テスト
+                                                </Button>
+                                            </div>
+                                            {debugInfo && (
+                                                <pre className="text-xs overflow-auto max-h-40 p-2 bg-muted rounded-md">
+                                                    {JSON.stringify(debugInfo, null, 2)}
+                                                </pre>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                </CollapsibleContent>
+                            </Collapsible>
+                        </form>
+                    </Form>
+                )}
+            </CardContent>
+            <CardFooter className="flex justify-center border-t pt-4">
+                <p className="text-xs text-muted-foreground text-center">
+                    入力いただいた情報は、使用状況の記録と課金計算のためだけに使用されます。
+                </p>
+            </CardFooter>
+        </Card>
     )
 }
 

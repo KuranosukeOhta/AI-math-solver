@@ -1,7 +1,7 @@
 'use client'
 
 import type { FC } from 'react'
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Loading02 from '@/app/components/base/icons/line/loading-02'
 import XClose from '@/app/components/base/icons/line/x-close'
