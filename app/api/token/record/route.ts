@@ -32,7 +32,14 @@ function calculateCost(inputTokens: number, outputTokens: number): number {
   return totalCost;
 }
 
-const prisma = new PrismaClient()
+// 環境変数からデータベースURLを取得
+const databaseUrl = process.env.DATABASE_URL;
+console.log('[DATABASE] Using database URL from environment variable');
+
+// PrismaClientのインスタンスを作成し、明示的にデータベースURLを設定
+const prisma = new PrismaClient({
+  datasourceUrl: databaseUrl
+});
 
 export async function POST(request: NextRequest) {
   try {
