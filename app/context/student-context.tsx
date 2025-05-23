@@ -1,12 +1,19 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+
+interface ApiResponse {
+    success: boolean
+    message: string
+    userId?: string
+}
 
 interface StudentContextType {
     studentId: string
     name: string
     isRegistered: boolean
-    setStudentInfo: (studentId: string, name: string) => Promise<any>
+    setStudentInfo: (studentId: string, name: string) => Promise<ApiResponse>
+    loginStudent: (studentId: string, name: string) => Promise<ApiResponse>
     clearStudentInfo: () => void
 }
 
@@ -49,7 +56,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
         checkRegistration()
     }, [])
 
-    const setStudentInfo = async (newStudentId: string, newName: string) => {
+    const setStudentInfo = async (newStudentId: string, newName: string): Promise<ApiResponse> => {
         try {
             console.log('StudentContext: setStudentInfo started');
             const response = await fetch('/api/student/register', {
@@ -63,7 +70,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
 
             // レスポンスのテキストを取得
             const responseText = await response.text();
-            let responseData;
+            let responseData: ApiResponse;
 
             // JSONとして解析可能か試みる
             try {
@@ -81,17 +88,62 @@ export function StudentProvider({ children }: { children: ReactNode }) {
                     setIsRegistered(true)
                     console.log('StudentContext: Registration successful, isRegistered set to true');
                     return responseData;
-                } else {
-                    console.log('StudentContext: Registration failed, data.success is false');
-                    throw new Error(responseData.message || '登録に失敗しました');
                 }
-            } else {
-                console.log('StudentContext: Registration failed, response not ok:', responseData);
-                throw new Error(responseData.message || `登録に失敗しました (${response.status})`);
+                console.log('StudentContext: Registration failed, data.success is false');
+                throw new Error(responseData.message || '登録に失敗しました');
             }
-        } catch (error: any) {
+            console.log('StudentContext: Registration failed, response not ok:', responseData);
+            throw new Error(responseData.message || `登録に失敗しました (${response.status})`);
+        } catch (error: unknown) {
             console.error('学生情報登録エラー:', error);
-            if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+            if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+                throw new Error('APIサーバーに接続できません。ネットワーク接続を確認してください。');
+            }
+            throw error;
+        }
+    }
+
+    const loginStudent = async (loginStudentId: string, loginName: string): Promise<ApiResponse> => {
+        try {
+            console.log('StudentContext: loginStudent started');
+            const response = await fetch('/api/student/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ studentId: loginStudentId, name: loginName }),
+            })
+            console.log('StudentContext: login API response status:', response.status);
+
+            // レスポンスのテキストを取得
+            const responseText = await response.text();
+            let responseData: ApiResponse;
+
+            // JSONとして解析可能か試みる
+            try {
+                responseData = JSON.parse(responseText);
+                console.log('StudentContext: login API response data:', responseData);
+            } catch (e) {
+                console.error('StudentContext: Failed to parse response as JSON:', responseText);
+                throw new Error(`API応答の解析に失敗しました: ${responseText}`);
+            }
+
+            if (response.ok) {
+                if (responseData.success) {
+                    setStudentId(loginStudentId)
+                    setName(loginName)
+                    setIsRegistered(true)
+                    console.log('StudentContext: Login successful, isRegistered set to true');
+                    return responseData;
+                }
+                console.log('StudentContext: Login failed, data.success is false');
+                throw new Error(responseData.message || 'ログインに失敗しました');
+            }
+            console.log('StudentContext: Login failed, response not ok:', responseData);
+            throw new Error(responseData.message || `ログインに失敗しました (${response.status})`);
+        } catch (error: unknown) {
+            console.error('学生ログインエラー:', error);
+            if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
                 throw new Error('APIサーバーに接続できません。ネットワーク接続を確認してください。');
             }
             throw error;
@@ -107,7 +159,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
     }
 
     return (
-        <StudentContext.Provider value={{ studentId, name, isRegistered, setStudentInfo, clearStudentInfo }}>
+        <StudentContext.Provider value={{ studentId, name, isRegistered, setStudentInfo, loginStudent, clearStudentInfo }}>
             {children}
         </StudentContext.Provider>
     )

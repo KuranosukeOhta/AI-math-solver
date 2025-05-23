@@ -44,7 +44,7 @@ type FormValues = z.infer<typeof formSchema>
 
 const StudentForm: React.FC<StudentFormProps> = ({ onRegister }) => {
     console.log('StudentForm: Component rendering')
-    const { setStudentInfo, isRegistered, studentId: savedStudentId, name: savedName } = useStudent()
+    const { setStudentInfo, loginStudent, isRegistered, studentId: savedStudentId, name: savedName } = useStudent()
     console.log('StudentForm: isRegistered =', isRegistered)
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [error, setError] = useState<string>('')
@@ -97,6 +97,34 @@ const StudentForm: React.FC<StudentFormProps> = ({ onRegister }) => {
         } catch (err: unknown) {
             console.error('StudentForm: Error during registration:', err)
             const errorMessage = err instanceof Error ? err.message : '登録に失敗しました。もう一度お試しください。'
+
+            // 既に登録されている場合はログインを試行
+            if (errorMessage.includes('既に登録されています')) {
+                console.log('StudentForm: Student already registered, attempting login...')
+                try {
+                    const loginResponse = await loginStudent(values.studentId, values.name)
+                    console.log('StudentForm: loginStudent response:', loginResponse)
+                    toast({
+                        title: "ログイン完了",
+                        description: "ログインが完了しました",
+                    })
+                    if (onRegister) onRegister()
+                    return // 成功したのでここで終了
+                } catch (loginErr: unknown) {
+                    console.error('StudentForm: Error during login:', loginErr)
+                    const loginErrorMessage = loginErr instanceof Error ? loginErr.message : 'ログインに失敗しました。'
+                    setError(loginErrorMessage)
+                    toast({
+                        variant: "destructive",
+                        title: "ログインエラー",
+                        description: loginErrorMessage,
+                    })
+                    setDebugInfo(loginErr as DebugInfo)
+                    return
+                }
+            }
+
+            // その他のエラー
             setError(errorMessage)
             toast({
                 variant: "destructive",
@@ -143,9 +171,9 @@ const StudentForm: React.FC<StudentFormProps> = ({ onRegister }) => {
     return (
         <Card className="w-full">
             <CardHeader>
-                <CardTitle className="text-2xl font-bold text-center">学生情報登録</CardTitle>
+                <CardTitle className="text-2xl font-bold text-center">学生ログイン・登録</CardTitle>
                 <CardDescription className="text-center">
-                    学番と名前を入力して登録してください
+                    学番と名前を入力してください（初回の場合は自動で登録されます）
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -236,7 +264,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ onRegister }) => {
                                     : 'bg-primary/70'
                                     }`}
                             >
-                                {isLoading ? '登録中...' : '登録して使い始める'}
+                                {isLoading ? 'ログイン中...' : 'ログイン・登録する'}
                             </Button>
 
                             <Collapsible className="w-full">
