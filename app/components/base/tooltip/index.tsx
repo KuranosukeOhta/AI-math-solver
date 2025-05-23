@@ -1,15 +1,19 @@
 'use client'
-import classNames from 'classnames'
 import type { FC } from 'react'
 import React from 'react'
-import { Tooltip as ReactTooltip } from 'react-tooltip' // fixed version to 5.8.3 https://github.com/ReactTooltip/react-tooltip/issues/972
-import 'react-tooltip/dist/react-tooltip.css'
+import {
+  Tooltip as ShadcnTooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
 
 type TooltipProps = {
   selector: string
   content?: string
   htmlContent?: React.ReactNode
-  className?: string // This should use !impornant to override the default styles eg: '!bg-white'
+  className?: string
   position?: 'top' | 'right' | 'bottom' | 'left'
   clickable?: boolean
   children: React.ReactNode
@@ -22,24 +26,18 @@ const Tooltip: FC<TooltipProps> = ({
   children,
   htmlContent,
   className,
-  clickable,
 }) => {
   return (
-    <div className='tooltip-container'>
-      {React.cloneElement(children as React.ReactElement, {
-        'data-tooltip-id': selector,
-      })
-      }
-      <ReactTooltip
-        id={selector}
-        content={content}
-        className={classNames('!bg-white !text-xs !font-normal !text-gray-700 !shadow-lg !opacity-100', className)}
-        place={position}
-        clickable={clickable}
-      >
-        {htmlContent && htmlContent}
-      </ReactTooltip>
-    </div>
+    <TooltipProvider>
+      <ShadcnTooltip>
+        <TooltipTrigger>
+          {children}
+        </TooltipTrigger>
+        <TooltipContent side={position as "top" | "right" | "bottom" | "left"} className={cn(className)}>
+          {content || htmlContent}
+        </TooltipContent>
+      </ShadcnTooltip>
+    </TooltipProvider>
   )
 }
 

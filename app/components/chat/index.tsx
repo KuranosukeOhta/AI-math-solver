@@ -9,7 +9,6 @@ import Question from './question'
 import type { FeedbackFunc } from './type'
 import type { ChatItem, VisionFile, VisionSettings } from '@/types/app'
 import { TransferMethod } from '@/types/app'
-import Tooltip from '@/app/components/base/tooltip'
 import Toast from '@/app/components/base/toast'
 import ChatImageUploader from '@/app/components/base/image-uploader/chat-image-uploader'
 import ImageList from '@/app/components/base/image-uploader/image-list'
@@ -18,8 +17,14 @@ import { useTokenRecorder } from '@/app/hooks/use-token-recorder'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { PaperPlaneIcon } from 'lucide-react'
+import { SendIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 // エラーメッセージの定数
 const ERROR_MESSAGES = {
@@ -211,24 +216,26 @@ const Chat: FC<IChatProps> = ({
                   <Badge variant="outline" className="h-6">
                     {query.trim().length}
                   </Badge>
-                  <Tooltip
-                    selector="send-tip"
-                    htmlContent={
-                      <div>
-                        <div>{t('common.operation.send')} Enter</div>
-                        <div>{t('common.operation.lineBreak')} Shift + Enter</div>
-                      </div>
-                    }
-                  >
-                    <Button
-                      size="icon"
-                      className="h-8 w-8 rounded-full"
-                      onClick={handleSend}
-                      disabled={isResponding}
-                    >
-                      <PaperPlaneIcon className="h-4 w-4" />
-                    </Button>
-                  </Tooltip>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Button
+                          size="icon"
+                          className="h-8 w-8 rounded-full"
+                          onClick={handleSend}
+                          disabled={isResponding}
+                        >
+                          <SendIcon className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div>
+                          <div>{t('common.operation.send')} Enter</div>
+                          <div>{t('common.operation.lineBreak')} Shift + Enter</div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
             </Card>
