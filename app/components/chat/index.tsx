@@ -9,15 +9,17 @@ import Question from './question'
 import type { FeedbackFunc } from './type'
 import type { ChatItem, VisionFile, VisionSettings } from '@/types/app'
 import { TransferMethod } from '@/types/app'
+import type { FileEntity, FileUpload } from '@/app/components/base/file-uploader-in-attachment/types'
 import Toast from '@/app/components/base/toast'
 import ChatImageUploader from '@/app/components/base/image-uploader/chat-image-uploader'
 import ImageList from '@/app/components/base/image-uploader/image-list'
+import FileUploaderInAttachmentWrapper from '@/app/components/base/file-uploader-in-attachment'
 import { useImageFiles } from '@/app/components/base/image-uploader/hooks'
 import { useTokenRecorder } from '@/app/hooks/use-token-recorder'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { SendIcon } from 'lucide-react'
+import { SendIcon, PaperclipIcon, ImageIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import {
   Tooltip,
@@ -46,11 +48,12 @@ export type IChatProps = {
   isHideSendInput?: boolean
   onFeedback?: FeedbackFunc
   checkCanSend?: () => boolean
-  onSend?: (message: string, files: VisionFile[]) => void
+  onSend?: (message: string, files: VisionFile[], documents?: FileEntity[]) => void
   useCurrentUserAvatar?: boolean
   isResponding?: boolean
   controlClearQuery?: number
   visionConfig?: VisionSettings
+  fileConfig?: FileUpload
 }
 
 const Chat: FC<IChatProps> = ({
@@ -64,6 +67,7 @@ const Chat: FC<IChatProps> = ({
   isResponding,
   controlClearQuery,
   visionConfig,
+  fileConfig,
 }) => {
   const { t } = useTranslation()
   const { notify } = Toast
@@ -71,6 +75,10 @@ const Chat: FC<IChatProps> = ({
   const { recordTokenUsage } = useTokenRecorder()
 
   const [query, setQuery] = React.useState('')
+  const [documents, setDocuments] = useState<FileEntity[]>([])
+  const [showImageUploader, setShowImageUploader] = useState(true)
+  const [showFileUploader, setShowFileUploader] = useState(false)
+
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
     setQuery(value)
@@ -109,9 +117,12 @@ const Chat: FC<IChatProps> = ({
   }, [chatList, isResponding, recordTokenUsage])
 
   useEffect(() => {
-    if (controlClearQuery)
+    if (controlClearQuery) {
       setQuery('')
+      setDocuments([])
+    }
   }, [controlClearQuery])
+
   const {
     files,
     onUpload,
@@ -125,15 +136,20 @@ const Chat: FC<IChatProps> = ({
   const handleSend = () => {
     if (!valid() || (checkCanSend && !checkCanSend()))
       return
-    onSend(query, files.filter(file => file.progress !== -1).map(fileItem => ({
+
+    const visionFiles = files.filter(file => file.progress !== -1).map(fileItem => ({
       type: 'image',
       transfer_method: fileItem.type,
       url: fileItem.url,
       upload_file_id: fileItem.fileId,
-    })))
+    }))
+
+    onSend(query, visionFiles, documents)
+
     if (!files.find(item => item.type === TransferMethod.local_file && !item.fileId)) {
       if (files.length)
         onClear()
+      setDocuments([])
       if (!isResponding)
         setQuery('')
     }
@@ -155,6 +171,21 @@ const Chat: FC<IChatProps> = ({
       e.preventDefault()
     }
   }
+
+  // デフォルトのファイル設定
+  const defaultFileConfig: FileUpload = {
+    enabled: true,
+    allowed_file_types: ['pdf', 'doc', 'docx', 'txt', 'md', 'csv', 'xlsx'],
+    allowed_file_extensions: ['.pdf', '.doc', '.docx', '.txt', '.md', '.csv', '.xlsx'],
+    allowed_file_upload_methods: [TransferMethod.local_file, TransferMethod.remote_url],
+    number_limits: 5,
+    fileUploadConfig: {
+      batch_count_limit: 5,
+      file_size_limit: 15 * 1024 * 1024, // 15MB
+    }
+  }
+
+  const effectiveFileConfig = fileConfig || defaultFileConfig
 
   return (
     <div className={cn(!feedbackDisabled && 'px-3.5', 'h-full')}>
@@ -186,7 +217,62 @@ const Chat: FC<IChatProps> = ({
         !isHideSendInput && (
           <div className={cn(!feedbackDisabled && '!left-3.5 !right-3.5', 'fixed z-10 bottom-6 left-0 right-0 max-w-7xl mx-auto px-4')}>
             <Card className="border shadow-md p-2">
-              {visionConfig?.enabled && (
+              {/* Attachment Section */}
+              <div className="mb-2 flex items-center space-x-2">
+                {/* Image Upload Toggle */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant={showImageUploader ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          setShowImageUploader(!showImageUploader)
+                          if (showFileUploader) setShowFileUploader(false)
+                        }}
+                      >
+                        <ImageIcon className="h-4 w-4" />
+                        画像
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>画像をアップロード</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                {/* File Upload Toggle */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant={showFileUploader ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          setShowFileUploader(!showFileUploader)
+                          if (showImageUploader) setShowImageUploader(false)
+                        }}
+                      >
+                        <PaperclipIcon className="h-4 w-4" />
+                        ファイル
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>文書ファイルをアップロード</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                {/* Active files count */}
+                {(files.length > 0 || documents.length > 0) && (
+                  <Badge variant="secondary">
+                    {files.length + documents.length} ファイル
+                  </Badge>
+                )}
+              </div>
+
+              {/* Image Upload Section */}
+              {showImageUploader && visionConfig?.enabled && (
                 <div className="mb-2 flex items-center">
                   <ChatImageUploader
                     settings={visionConfig}
@@ -198,45 +284,40 @@ const Chat: FC<IChatProps> = ({
                     list={files}
                     onRemove={onRemove}
                     onReUpload={onReUpload}
-                    onImageLinkLoadSuccess={onImageLinkLoadSuccess}
                     onImageLinkLoadError={onImageLinkLoadError}
+                    onImageLinkLoadSuccess={onImageLinkLoadSuccess}
                   />
                 </div>
               )}
-              <div className="relative">
+
+              {/* File Upload Section */}
+              {showFileUploader && effectiveFileConfig.enabled && (
+                <div className="mb-2">
+                  <FileUploaderInAttachmentWrapper
+                    value={documents}
+                    onChange={setDocuments}
+                    fileConfig={effectiveFileConfig}
+                  />
+                </div>
+              )}
+
+              {/* Text Input Section */}
+              <div className="flex items-end space-x-2">
                 <Textarea
-                  className="min-h-[60px] pr-24 resize-none focus-visible:ring-1 focus-visible:ring-primary"
-                  placeholder="メッセージを入力..."
+                  className="min-h-[40px] max-h-[200px] resize-none"
+                  placeholder="メッセージを入力してください..."
                   value={query}
                   onChange={handleContentChange}
                   onKeyUp={handleKeyUp}
                   onKeyDown={handleKeyDown}
                 />
-                <div className="absolute bottom-2 right-2 flex items-center space-x-2">
-                  <Badge variant="outline" className="h-6">
-                    {query.trim().length}
-                  </Badge>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Button
-                          size="icon"
-                          className="h-8 w-8 rounded-full"
-                          onClick={handleSend}
-                          disabled={isResponding}
-                        >
-                          <SendIcon className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div>
-                          <div>{t('common.operation.send')} Enter</div>
-                          <div>{t('common.operation.lineBreak')} Shift + Enter</div>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
+                <Button
+                  onClick={handleSend}
+                  disabled={isResponding || !query.trim()}
+                  size="icon"
+                >
+                  <SendIcon className="h-4 w-4" />
+                </Button>
               </div>
             </Card>
           </div>

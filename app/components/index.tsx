@@ -24,6 +24,7 @@ import type { Annotation as AnnotationType } from '@/types/log'
 import { addFileInfos, sortAgentSorts } from '@/utils/tools'
 import StudentForm from '@/app/components/student-form'
 import { useStudent } from '@/app/context/student-context'
+import type { FileEntity } from '@/app/components/base/file-uploader-in-attachment/types'
 
 export type IMainProps = {
   params: any
@@ -295,14 +296,14 @@ const Main: FC<IMainProps> = () => {
 
   const transformToServerFile = (fileItem: any) => {
     return {
-      type: 'image',
-      transfer_method: fileItem.transferMethod,
+      type: 'file',
+      transfer_method: fileItem.type,
       url: fileItem.url,
       upload_file_id: fileItem.id,
     }
   }
 
-  const handleSend = async (message: string, files?: VisionFile[]) => {
+  const handleSend = async (message: string, files?: VisionFile[], documents?: FileEntity[]) => {
     if (isResponding) {
       notify({ type: 'info', message: t('app.errorMessage.waitForResponse') })
       return
@@ -340,13 +341,44 @@ const Main: FC<IMainProps> = () => {
       })
     }
 
+    // Add document files to data
+    if (documents && documents.length > 0) {
+      const documentFiles = documents.map((doc) => ({
+        type: 'document',
+        transfer_method: doc.transferMethod,
+        url: doc.url || '',
+        upload_file_id: doc.uploadedId || '',
+        name: doc.name,
+        size: doc.size,
+        supportFileType: doc.supportFileType,
+      }))
+
+      if (data.files) {
+        data.files = [...data.files, ...documentFiles]
+      } else {
+        data.files = documentFiles
+      }
+    }
+
     // question
     const questionId = `question-${Date.now()}`
+    const allFiles = [
+      ...(files || []),
+      ...(documents || []).map(doc => ({
+        id: doc.id,
+        type: 'document',
+        transfer_method: doc.transferMethod,
+        url: doc.url || '',
+        upload_file_id: doc.uploadedId || '',
+        belongs_to: 'user',
+      } as VisionFile))
+    ]
+
     const questionItem = {
       id: questionId,
       content: message,
       isAnswer: false,
-      message_files: files,
+      message_files: allFiles,
     }
 
     const placeholderAnswerId = `answer-placeholder-${Date.now()}`
