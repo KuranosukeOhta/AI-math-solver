@@ -1,80 +1,76 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/utils/supabase';
-import { validateStudentId } from '@/utils/supabase';
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@/app/generated/prisma';
 
-export async function POST(request: NextRequest) {
-  console.log('[/api/student/login] POST request received');
+const prisma = new PrismaClient();
+
+interface ApiResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    userId: string;
+  };
+}
+
+export async function POST(request: NextRequest): Promise<NextResponse<ApiResponse>> {
   try {
-    const body = await request.json();
-    const { studentId, name } = body;
-    console.log(`[/api/student/login] Request body: studentId=${studentId}, name=${name}`);
+    const { studentId, name } = await request.json();
 
-    // バリデーション
+    console.log(`[/api/student/login] Processing login for studentId: ${studentId}, name: ${name}`);
+
     if (!studentId || !name) {
-      console.log('[/api/student/login] Validation failed: studentId or name is missing');
-      return NextResponse.json({ success: false, message: '学番と名前を入力してください' }, { status: 400 });
+      console.log(`[/api/student/login] Missing required fields: studentId=${studentId}, name=${name}`);
+      return NextResponse.json({
+        success: false,
+        message: 'Student ID and name are required'
+      }, { status: 400 });
     }
 
-    if (!validateStudentId(studentId)) {
-      console.log(`[/api/student/login] Validation failed: Invalid studentId format: ${studentId}`);
-      return NextResponse.json({ success: false, message: '学番の形式が正しくありません（例: ab12345）' }, { status: 400 });
+    // Find user using Prisma
+    const existingUser = await prisma.user.findUnique({
+      where: { studentId: studentId }
+    });
+
+    if (!existingUser) {
+      console.log(`[/api/student/login] Student not found: ${studentId}`);
+      return NextResponse.json({
+        success: false,
+        message: 'Student not found'
+      }, { status: 404 });
     }
 
-    // 既存のユーザーをチェック
-    console.log(`[/api/student/login] Checking if studentId ${studentId} exists`);
-    const { data: existingUser, error: checkError } = await supabase
-      .from('users')
-      .select('id, name, student_id')
-      .eq('student_id', studentId)
-      .single();
-
-    if (checkError) {
-      if (checkError.code === 'PGRST116') { // 見つからない
-        console.log(`[/api/student/login] User with studentId ${studentId} not found`);
-        return NextResponse.json({ 
-          success: false, 
-          message: 'この学番は登録されていません' 
-        }, { status: 404 });
-      }
-      console.log('[/api/student/login] Error checking existing user:', checkError);
-      return NextResponse.json({ 
-        success: false, 
-        message: 'データベースエラーが発生しました' 
-      }, { status: 500 });
-    }
-
-    // 名前の照合
+    // Validate name
     if (existingUser.name !== name) {
       console.log(`[/api/student/login] Name mismatch for studentId ${studentId}: expected ${existingUser.name}, got ${name}`);
-      return NextResponse.json({ 
-        success: false, 
-        message: '学番と名前が一致しません' 
+      return NextResponse.json({
+        success: false,
+        message: 'Invalid student ID or name'
       }, { status: 401 });
     }
 
     console.log(`[/api/student/login] Login successful for user: ${existingUser.id}`);
 
-    // cookieにuserIdを保存
-    const response = NextResponse.json({ 
-      success: true, 
-      message: 'ログインが完了しました',
-      userId: existingUser.id
+    const response = NextResponse.json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        userId: existingUser.id
+      }
     });
-    
+
     response.cookies.set('userId', existingUser.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30 // 30日
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     });
 
     return response;
 
   } catch (error) {
-    console.error('[/api/student/login] Unexpected error:', error);
-    return NextResponse.json({ 
-      success: false, 
-      message: 'サーバーエラーが発生しました' 
+    console.error('[/api/student/login] Login error:', error);
+    return NextResponse.json({
+      success: false,
+      message: 'Login failed'
     }, { status: 500 });
   }
 } 

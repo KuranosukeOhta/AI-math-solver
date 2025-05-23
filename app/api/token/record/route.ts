@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@/app/generated/prisma/client'
+import { PrismaClient } from '@/app/generated/prisma'
 import { cookies } from 'next/headers'
 
 // OpenAI APIの料金（1000トークンあたりの価格、単位: USD）

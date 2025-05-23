@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/utils/supabase';
+import { PrismaClient } from '@/app/generated/prisma';
+
+const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,22 +17,19 @@ export async function GET(request: NextRequest) {
     }
 
     // トークン使用量の集計
-    const { data: tokenUsage, error: tokenUsageError } = await supabase
-      .from('users')
-      .select(`
-        id,
-        name,
-        student_id,
-        token_usage,
-        estimated_cost,
-        created_at
-      `)
-      .order('token_usage', { ascending: false });
-
-    if (tokenUsageError) {
-      console.error('トークン使用量取得エラー:', tokenUsageError);
-      return NextResponse.json({ success: false, message: 'データベースエラーが発生しました' }, { status: 500 });
-    }
+    const tokenUsage = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        studentId: true,
+        tokenUsage: true,
+        estimatedCost: true,
+        createdAt: true
+      },
+      orderBy: {
+        tokenUsage: 'desc'
+      }
+    });
 
     return NextResponse.json({
       success: true,
