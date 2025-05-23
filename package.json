@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "fix": "next lint --fix",
     "eslint-fix": "eslint . --fix",
     "prepare": "husky install ./.husky",
+    "postinstall": "prisma generate",
     "test": "jest"
   },
   "dependencies": {
@@ -40,6 +41,7 @@
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.1.0",
     "@supabase/supabase-js": "^2.39.7",
+    "@tailwindcss/line-clamp": "^0.4.4",
     "@types/node": "18.15.0",
     "@types/react": "18.0.28",
     "@types/react-dom": "18.0.11",
