@@ -129,7 +129,9 @@ exports.Prisma.UserScalarFieldEnum = {
   tokenUsage: 'tokenUsage',
   estimatedCost: 'estimatedCost',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  googleId: 'googleId',
+  profileImage: 'profileImage'
 };
 
 exports.Prisma.TokenUsageLogScalarFieldEnum = {
@@ -141,6 +143,34 @@ exports.Prisma.TokenUsageLogScalarFieldEnum = {
   modelName: 'modelName',
   cost: 'cost',
   conversationId: 'conversationId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ConversationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  title: 'title',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  role: 'role',
+  content: 'content',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.MessageImageScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  filename: 'filename',
+  originalName: 'originalName',
+  mimeType: 'mimeType',
+  size: 'size',
+  base64Data: 'base64Data',
+  url: 'url',
   createdAt: 'createdAt'
 };
 
@@ -162,7 +192,10 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.ModelName = {
   User: 'User',
-  TokenUsageLog: 'TokenUsageLog'
+  TokenUsageLog: 'TokenUsageLog',
+  Conversation: 'Conversation',
+  Message: 'Message',
+  MessageImage: 'MessageImage'
 };
 
 /**

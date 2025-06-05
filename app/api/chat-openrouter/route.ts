@@ -1,0 +1,265 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { PrismaClient } from '@/app/generated/prisma'
+
+const prisma = new PrismaClient()
+
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
+
+// 現在使用する思考モデル
+const REASONING_MODEL = 'openai/o1-preview'
+const CHAT_MODEL = 'openai/gpt-4o'
+
+// o1-preview料金設定（1M tokensあたりの価格、単位: USD）
+const O1_PREVIEW_PRICE = {
+  INPUT: 15.00,   // $15.00 per 1M tokens
+  OUTPUT: 60.00   // $60.00 per 1M tokens
+}
+
+// GPT-4o料金設定（1M tokensあたりの価格、単位: USD）
+const GPT4O_PRICE = {
+  INPUT: 2.50,   // $2.50 per 1M tokens
+  OUTPUT: 10.00  // $10.00 per 1M tokens
+}
+
+/**
+ * トークン使用量を記録する関数
+ */
+const recordTokenUsage = async (userId: string, inputTokens: number, outputTokens: number, model: string) => {
+  try {
+    // モデルに応じた価格設定
+    const prices = model.includes('o1-preview') ? O1_PREVIEW_PRICE : GPT4O_PRICE
+    
+    const totalTokens = inputTokens + outputTokens
+    const totalCost = ((inputTokens / 1000000) * prices.INPUT) + ((outputTokens / 1000000) * prices.OUTPUT)
+
+    await prisma.tokenUsageLog.create({
+      data: {
+        userId: userId,
+        inputTokens: inputTokens,
+        outputTokens: outputTokens,
+        totalTokens: totalTokens,
+        modelName: model,
+        cost: totalCost
+      }
+    })
+
+    // ユーザーの総トークン使用量とコストを更新
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        tokenUsage: {
+          increment: totalTokens
+        },
+        estimatedCost: {
+          increment: totalCost
+        }
+      }
+    })
+
+    return true
+  } catch (error) {
+    console.error('トークン使用量記録中のエラー:', error)
+    return false
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const { messages, model = REASONING_MODEL, stream = true, userId } = await request.json()
+
+    if (!OPENROUTER_API_KEY) {
+      return NextResponse.json(
+        { error: 'OpenRouter API key not configured' }, 
+        { status: 500 }
+      )
+    }
+
+    // OpenRouterリクエストの準備
+    const openRouterRequest = {
+      model,
+      messages,
+      stream,
+      temperature: 0.7,
+      max_tokens: 4000,
+      // 思考プロセスの有効化
+      reasoning: {
+        enabled: true,
+        include_steps: true,
+        stream_steps: true
+      }
+    }
+
+    console.log('OpenRouter request:', JSON.stringify(openRouterRequest, null, 2))
+
+    const response = await fetch(OPENROUTER_API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+        'X-Title': 'AI Math Solver'
+      },
+      body: JSON.stringify(openRouterRequest)
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('OpenRouter API error:', response.status, errorText)
+      return NextResponse.json(
+        { error: `OpenRouter API error: ${response.status}` }, 
+        { status: response.status }
+      )
+    }
+
+    if (stream) {
+      // ストリーミングレスポンスの処理
+      const encoder = new TextEncoder()
+      const decoder = new TextDecoder()
+
+      let conversationId = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      let messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      let inputTokens = 0
+      let outputTokens = 0
+      let fullContent = ''
+
+      const readableStream = new ReadableStream({
+        async start(controller) {
+          const reader = response.body?.getReader()
+          if (!reader) {
+            controller.close()
+            return
+          }
+
+          try {
+            let buffer = ''
+            
+            while (true) {
+              const { done, value } = await reader.read()
+              
+              if (done) {
+                // 最終的な使用状況の送信
+                if (userId && inputTokens > 0) {
+                  await recordTokenUsage(userId, inputTokens, outputTokens, model)
+                }
+
+                // 終了イベントの送信
+                const endEvent = {
+                  event: 'message_end',
+                  data: {
+                    id: messageId,
+                    conversation_id: conversationId,
+                    usage: {
+                      input_tokens: inputTokens,
+                      output_tokens: outputTokens,
+                      total_tokens: inputTokens + outputTokens
+                    }
+                  }
+                }
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify(endEvent)}\n\n`))
+                controller.close()
+                break
+              }
+
+              buffer += decoder.decode(value, { stream: true })
+              const lines = buffer.split('\n')
+              buffer = lines.pop() || ''
+
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const data = line.slice(6).trim()
+                  
+                  if (data === '[DONE]') {
+                    continue
+                  }
+
+                  try {
+                    const parsed = JSON.parse(data)
+                    
+                    // 使用状況の追跡
+                    if (parsed.usage) {
+                      inputTokens = parsed.usage.prompt_tokens || 0
+                      outputTokens = parsed.usage.completion_tokens || 0
+                    }
+
+                    if (parsed.choices && parsed.choices[0]) {
+                      const choice = parsed.choices[0]
+                      const content = choice.delta?.content || ''
+
+                      if (content) {
+                        fullContent += content
+                        
+                        // メッセージデータの構築
+                        const messageData = {
+                          event: 'message',
+                          data: {
+                            id: messageId,
+                            conversation_id: conversationId,
+                            answer: content,
+                            created_at: Date.now()
+                          }
+                        }
+
+                        controller.enqueue(encoder.encode(`data: ${JSON.stringify(messageData)}\n\n`))
+                      }
+
+                      // 思考プロセスの処理
+                      if (choice.delta?.reasoning) {
+                        const reasoningData = {
+                          event: 'agent_thought',
+                          data: {
+                            id: `thought_${Date.now()}`,
+                            chain_id: messageId,
+                            position: parsed.reasoning?.step || 0,
+                            thought: choice.delta.reasoning,
+                            created_at: Date.now()
+                          }
+                        }
+
+                        controller.enqueue(encoder.encode(`data: ${JSON.stringify(reasoningData)}\n\n`))
+                      }
+                    }
+                  } catch (parseError) {
+                    console.error('Failed to parse OpenRouter response:', parseError)
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Stream processing error:', error)
+            controller.error(error)
+          }
+        }
+      })
+
+      return new NextResponse(readableStream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      })
+    } else {
+      // 非ストリーミングレスポンス
+      const data = await response.json()
+      
+      // トークン使用量の記録
+      if (userId && data.usage) {
+        await recordTokenUsage(
+          userId, 
+          data.usage.prompt_tokens || 0, 
+          data.usage.completion_tokens || 0, 
+          model
+        )
+      }
+
+      return NextResponse.json(data)
+    }
+  } catch (error) {
+    console.error('OpenRouter chat error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' }, 
+      { status: 500 }
+    )
+  }
+} 

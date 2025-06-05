@@ -1,138 +1,84 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { API_KEY, API_URL, APP_ID } from '@/config'
+import { PrismaClient } from '@/app/generated/prisma'
 
-// メッセージ一覧を取得するエンドポイント（Difyプロキシ）
+const prisma = new PrismaClient()
+
+// メッセージ一覧を取得
 export async function GET(request: NextRequest) {
   try {
-    // URLからクエリパラメータを取得
     const { searchParams } = new URL(request.url)
-    const conversationId = searchParams.get('conversation_id')
-    const limit = searchParams.get('limit')
-    const lastId = searchParams.get('last_id')
+    const conversationId = searchParams.get('conversationId')
     
-    console.log('[DEBUG Proxy] Messages API Request:', { conversationId, limit, lastId })
-
-    // 必須パラメータのチェック
     if (!conversationId) {
       return NextResponse.json(
-        { error: true, message: 'conversation_id is required' },
+        { error: 'conversationId is required' }, 
         { status: 400 }
       )
     }
 
-    // Dify APIのエンドポイント
-    const difyUrl = new URL(`${API_URL}/messages`)
-    
-    // クエリパラメータを追加
-    difyUrl.searchParams.append('conversation_id', conversationId)
-    if (limit) difyUrl.searchParams.append('limit', limit)
-    if (lastId) difyUrl.searchParams.append('last_id', lastId)
-    
-    // リクエストヘッダー
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${API_KEY}`,
-      'App-Id': APP_ID
-    }
-    
-    console.log('[DEBUG Proxy] Requesting Dify API:', difyUrl.toString())
-
-    // Dify APIにリクエスト
-    const response = await fetch(difyUrl.toString(), {
-      method: 'GET',
-      headers,
-      cache: 'no-store'
+    const messages = await prisma.message.findMany({
+      where: { conversationId },
+      include: {
+        images: true
+      },
+      orderBy: { createdAt: 'asc' }
     })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('[DEBUG Proxy] Dify API error:', response.status, errorText)
-      return NextResponse.json(
-        { 
-          error: true, 
-          message: `Failed to fetch messages from Dify API: ${response.status}`,
-          details: errorText
-        },
-        { status: response.status }
-      )
-    }
-
-    // 正常なレスポンスを返す
-    const data = await response.json()
-    return NextResponse.json(data)
-  } catch (error: any) {
-    console.error('[DEBUG Proxy] Error in messages proxy:', error)
+    return NextResponse.json(messages)
+  } catch (error) {
+    console.error('メッセージ取得エラー:', error)
     return NextResponse.json(
-      { 
-        error: true, 
-        message: error.message || 'Failed to process request',
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      },
+      { error: 'メッセージの取得に失敗しました' }, 
       { status: 500 }
     )
   }
 }
 
-// メッセージにフィードバックを追加するエンドポイント（Difyプロキシ）
+// メッセージの保存
 export async function POST(request: NextRequest) {
   try {
-    // パスからメッセージIDを取得
-    const path = new URL(request.url).pathname
-    const messageId = path.split('/messages/')[1]?.split('/')[0]
-    
-    if (!messageId) {
+    const { conversationId, role, content, images = [] } = await request.json()
+
+    if (!conversationId || !role || !content) {
       return NextResponse.json(
-        { error: true, message: 'Message ID is required' },
+        { error: '必要な情報が不足しています' }, 
         { status: 400 }
       )
     }
-    
-    const body = await request.json()
-    
-    console.log('[DEBUG Proxy] Feedback Request:', { messageId, body })
-    
-    // Dify APIのエンドポイント
-    const difyUrl = `${API_URL}/messages/${messageId}/feedbacks`
-    
-    // リクエストヘッダー
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${API_KEY}`,
-      'App-Id': APP_ID
-    }
 
-    // Dify APIにリクエスト
-    const response = await fetch(difyUrl, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body),
-      cache: 'no-store'
+    // メッセージを作成
+    const message = await prisma.message.create({
+      data: {
+        conversationId,
+        role,
+        content,
+        images: {
+          create: images.map((image: any) => ({
+            filename: image.id || `img_${Date.now()}`,
+            originalName: image.name || 'image',
+            mimeType: image.type || 'image/jpeg',
+            size: image.size || 0,
+            base64Data: image.base64 || image.url,
+            url: image.url
+          }))
+        }
+      },
+      include: {
+        images: true
+      }
     })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('[DEBUG Proxy] Dify API error:', response.status, errorText)
-      return NextResponse.json(
-        { 
-          error: true, 
-          message: `Failed to submit feedback to Dify API: ${response.status}`,
-          details: errorText
-        },
-        { status: response.status }
-      )
-    }
+    // 会話の更新日時を更新
+    await prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() }
+    })
 
-    // 正常なレスポンスを返す
-    const data = await response.json()
-    return NextResponse.json(data)
-  } catch (error: any) {
-    console.error('[DEBUG Proxy] Error in feedback proxy:', error)
+    return NextResponse.json(message)
+  } catch (error) {
+    console.error('メッセージ保存エラー:', error)
     return NextResponse.json(
-      { 
-        error: true, 
-        message: error.message || 'Failed to process request',
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      },
+      { error: 'メッセージの保存に失敗しました' }, 
       { status: 500 }
     )
   }

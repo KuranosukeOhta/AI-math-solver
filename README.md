@@ -1,173 +1,230 @@
-# Conversation Web App Template
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# AI Math Solver - ChatGPTライクな数学解決チャットアプリ
 
-## Config App
-Create a file named `.env.local` in the current directory and copy the contents from `.env.example`. Setting the following content:
+OpenRouterを使用したNext.js製のAI数学解決チャットアプリケーションです。Google認証、会話保存、LaTeX数式表示、思考プロセスのストリーミング表示などの機能を提供します。
+
+## 主な機能
+
+- 🔐 **Google認証** - NextAuth.jsを使用したセキュアな認証
+- 🤖 **OpenRouter API** - o1-preview/gpt-4oモデルによる高品質な数学解答
+- 💭 **思考プロセス表示** - AIの思考過程をリアルタイムでストリーミング
+- 📷 **画像アップロード** - 数学の問題画像を直接アップロード
+- 💬 **会話保存** - 全ての会話とメッセージを永続化
+- 📐 **LaTeX数式表示** - KaTeXによる美しい数式レンダリング
+- 🎨 **ChatGPTライクUI** - モダンで使いやすいインターフェース
+- 📱 **レスポンシブ対応** - デスクトップ・モバイル両対応
+
+## 必要な環境変数
+
+以下の環境変数を `.env.local` ファイルに設定してください：
+
+```bash
+# データベース (PostgreSQL)
+DATABASE_URL="postgresql://username:password@localhost:5432/ai_math_solver"
+
+# OpenRouter API
+OPENROUTER_API_KEY="your-openrouter-api-key"
+
+# Google OAuth (NextAuth.js)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-nextauth-secret"
+
+# サイト設定
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+
+# Supabase (オプション - 既存ユーザー管理継続用)
+NEXT_PUBLIC_SUPABASE_URL="your-supabase-url"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-supabase-anon-key"
 ```
-# APP ID: This is the unique identifier for your app. You can find it in the app's detail page URL. 
-# For example, in the URL `https://cloud.dify.ai/app/xxx/workflow`, the value `xxx` is your APP ID.
-NEXT_PUBLIC_APP_ID=
 
-# APP API Key: This is the key used to authenticate your app's API requests. 
-# You can generate it on the app's "API Access" page by clicking the "API Key" button in the top-right corner.
-NEXT_PUBLIC_APP_KEY=
+## セットアップ手順
 
-# APP URL: This is the API's base URL. If you're using the Dify cloud service, set it to: https://api.dify.ai/v1.
-NEXT_PUBLIC_API_URL=
+### 1. リポジトリのクローン
+```bash
+git clone <repository-url>
+cd AI-math-solver
 ```
 
-Config more in `config/index.ts` file:   
-```js
-export const APP_INFO: AppInfo = {
-  title: 'Chat APP',
-  description: '',
-  copyright: '',
-  privacy_policy: '',
-  default_language: 'zh-Hans'
-}
-
-export const isShowPrompt = true
-export const promptTemplate = ''
-```
-
-## Getting Started
-First, install dependencies:
+### 2. 依存関係のインストール
 ```bash
 npm install
-# or
-yarn
-# or
-pnpm install
 ```
 
-Then, run the development server:
+### 3. データベースのセットアップ
+```bash
+# Prismaクライアントの生成
+npx prisma generate
 
+# データベースマイグレーション
+npx prisma migrate dev --name init
+```
+
+### 4. Google OAuth設定
+
+1. [Google Cloud Console](https://console.cloud.google.com/) でプロジェクトを作成
+2. OAuth 2.0 認証情報を作成
+3. リダイレクトURIに `http://localhost:3000/api/auth/callback/google` を追加
+4. クライアントIDとシークレットを環境変数に設定
+
+### 5. OpenRouter設定
+
+1. [OpenRouter](https://openrouter.ai/) でアカウントを作成
+2. APIキーを取得
+3. 環境変数に設定
+
+### 6. 開発サーバー起動
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-## Using Docker
-
-```
-docker build . -t <DOCKER_HUB_REPO>/webapp-conversation:latest
-# now you can access it in port 3000
-docker run -p 3000:3000 <DOCKER_HUB_REPO>/webapp-conversation:latest
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## アーキテクチャ
 
-## Learn More
+### API エンドポイント
 
-To learn more about Next.js, take a look at the following resources:
+- `/api/chat-openrouter` - OpenRouterチャット（ストリーミング対応）
+- `/api/images/upload` - 画像アップロード（base64変換）
+- `/api/conversations` - 会話の作成・取得
+- `/api/conversations/[id]` - 個別会話操作
+- `/api/messages` - メッセージ保存
+- `/api/auth/[...nextauth]` - NextAuth.js認証
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### データベーススキーマ
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-> ⚠️ If you are using [Vercel Hobby](https://vercel.com/pricing), your message will be truncated due to the limitation of vercel.
-
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
-
-## Supabase設定
-
-以下のテーブルをSupabaseで作成する必要があります：
-
-### usersテーブル
 ```sql
-create table public.users (
-  id uuid default uuid_generate_v4() primary key,
-  email text unique not null,
-  password text not null,
-  name text,
-  created_at timestamp with time zone default now() not null,
-  updated_at timestamp with time zone default now() not null
-);
+-- ユーザー
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  name          String?
+  googleId      String?    @unique
+  profileImage  String?
+  conversations Conversation[]
+}
 
--- RLSポリシーを設定
-alter table public.users enable row level security;
+-- 会話
+model Conversation {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String   @default("新しい会話")
+  messages    Message[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+-- メッセージ
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           String   // 'user', 'assistant', 'system'
+  content        String
+  images         MessageImage[]
+  createdAt      DateTime @default(now())
+}
+
+-- 画像
+model MessageImage {
+  id            String   @id @default(cuid())
+  messageId     String
+  filename      String
+  base64Data    String   @db.Text
+  createdAt     DateTime @default(now())
+}
 ```
 
-### subscriptionsテーブル
-```sql
-create table public.subscriptions (
-  id uuid default uuid_generate_v4() primary key,
-  user_id uuid references public.users(id) not null,
-  subscription_end timestamp with time zone not null,
-  payment_id uuid references public.payments(id),
-  is_trial boolean default false,
-  created_at timestamp with time zone default now() not null
-);
+### 使用技術
 
--- RLSポリシーを設定
-alter table public.subscriptions enable row level security;
+#### フロントエンド
+- **Next.js 14** - App Router使用
+- **React** - UIライブラリ
+- **TypeScript** - 型安全な開発
+- **Tailwind CSS** - スタイリング
+- **Framer Motion** - アニメーション
+- **KaTeX** - 数式表示
+
+#### バックエンド
+- **Next.js API Routes** - APIエンドポイント
+- **Prisma** - データベースORM
+- **PostgreSQL** - データベース
+- **NextAuth.js** - 認証
+
+#### 外部サービス
+- **OpenRouter** - AIモデルAPI
+- **Google OAuth** - 認証プロバイダー
+
+## 主要機能の詳細
+
+### 1. 思考プロセス表示
+OpenRouterのo1-previewモデルの思考プロセスをリアルタイムでストリーミング表示
+
+### 2. 画像処理
+- ドラッグ&ドロップアップロード
+- base64エンコード
+- 数学問題の画像解析
+
+### 3. 会話管理
+- 自動タイトル生成
+- 会話履歴の永続化
+- 会話の削除・編集
+
+### 4. 数式表示
+- LaTeX記法対応
+- インライン・ブロック数式
+- 美しいレンダリング
+
+## デプロイ
+
+### Vercel
+```bash
+npm run build
+vercel deploy
 ```
 
-### paymentsテーブル
-```sql
-create table public.payments (
-  id uuid default uuid_generate_v4() primary key,
-  user_id uuid references public.users(id) not null,
-  amount integer not null,
-  stripe_id text,
-  status text not null, -- 'completed', 'trial', 'failed', 'pending'のいずれか
-  hours_added numeric not null, -- 小数点以下も許可（トライアル用）
-  created_at timestamp with time zone default now() not null
-);
+環境変数をVercelの設定画面で追加してください。
 
--- RLSポリシーを設定
-alter table public.payments enable row level security;
+### Docker
+```bash
+docker build -t ai-math-solver .
+docker run -p 3000:3000 ai-math-solver
 ```
 
-## 環境変数設定
+## 開発
 
-以下の環境変数をVercelダッシュボードで設定する必要があります：
-
+### ディレクトリ構造
 ```
-# Dify API設定
-NEXT_PUBLIC_APP_ID=your_dify_app_id
-NEXT_PUBLIC_APP_KEY=your_dify_api_key
-NEXT_PUBLIC_API_URL=your_dify_api_url
-
-# Stripe API設定
-STRIPE_SECRET_KEY=your_stripe_secret_key
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
-
-# NextAuth設定
-NEXTAUTH_SECRET=bKkXKFqmg0ooaQ5FCJIPWXiYwJxEDQFQ07wP0txd7eY=
-NEXTAUTH_URL=https://your-domain.vercel.app
-
-# Supabase設定
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-# 料金設定（円）
-NEXT_PUBLIC_PRICE_PER_HOUR=300
+├── app/
+│   ├── api/                    # APIエンドポイント
+│   ├── auth/                   # 認証関連ページ
+│   ├── chat/                   # チャットページ
+│   ├── components/             # UIコンポーネント
+│   └── generated/              # Prismaクライアント
+├── lib/                        # ユーティリティ
+├── prisma/                     # データベーススキーマ
+└── utils/                      # ヘルパー関数
 ```
 
-## トライアル機能
+### 開発コマンド
+```bash
+# 開発サーバー
+npm run dev
 
-このアプリケーションには以下の機能が含まれています：
+# ビルド
+npm run build
 
-1. **無料トライアル**: 新規ユーザーは初回ログイン時に5分間の無料トライアル期間が自動的に付与されます
-2. **時間制課金**: トライアル後は1時間あたり300円の料金で利用可能です
-3. **残り時間表示**: 現在のサブスクリプションの残り時間がリアルタイムで表示されます
+# データベースマイグレーション
+npx prisma migrate dev
 
-## Stripe Webhook設定
+# Prismaクライアント生成
+npx prisma generate
 
-1. Stripeダッシュボードで新しいWebhookエンドポイントを作成します
-2. エンドポイントURLを `https://your-domain.vercel.app/api/stripe/webhook` に設定します
-3. 以下のイベントを購読します：
-   - `checkout.session.completed`
-4. Signing Secretをコピーして、環境変数 `STRIPE_WEBHOOK_SECRET` に設定します
+# データベース閲覧
+npx prisma studio
+```
+
+## ライセンス
+
+MIT License
+
+## サポート
+
+問題や質問がある場合は、GitHubのIssuesまでお願いします。
