@@ -4,7 +4,8 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useStudent } from '@/app/context/student-context'
 import Chat from '@/app/components/chat'
-import type { ChatItem, Feedbacktype, VisionFile } from '@/types/app'
+import type { ChatItem, Feedbacktype, VisionFile, Resolution } from '@/types/app'
+import { TransferMethod } from '@/types/app'
 import Toast from '@/app/components/base/toast'
 import { sendChatMessage, fetchChatList, updateFeedback } from '@/service'
 import { v4 as uuidv4 } from 'uuid'
@@ -283,6 +284,13 @@ export default function ChatPage() {
                             onFeedback={handleFeedback}
                             isResponding={isResponding}
                             checkCanSend={checkCanSend}
+                            visionConfig={{
+                                enabled: true,
+                                number_limits: 5,
+                                image_file_size_limit: 10,
+                                detail: 'high' as Resolution,
+                                transfer_methods: [TransferMethod.local_file]
+                            }}
                         />
                     </CardContent>
                 </Card>

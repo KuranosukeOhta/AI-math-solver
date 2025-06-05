@@ -358,10 +358,18 @@ export const upload = (fetchOptions: any): Promise<any> => {
     xhr.withCredentials = true
     xhr.onreadystatechange = function () {
       if (xhr.readyState === 4) {
-        if (xhr.status === 200)
-          resolve({ id: xhr.response })
-        else
+        if (xhr.status === 200) {
+          try {
+            // レスポンスをJSONとしてパースを試行
+            const response = JSON.parse(xhr.response)
+            resolve(response)
+          } catch (e) {
+            // JSONパースに失敗した場合は、旧形式（string ID）として処理
+            resolve({ id: xhr.response })
+          }
+        } else {
           reject(xhr)
+        }
       }
     }
     xhr.upload.onprogress = options.onprogress
