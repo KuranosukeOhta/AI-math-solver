@@ -3,9 +3,16 @@ import { PrismaClient } from '@/app/generated/prisma';
 import OpenAI from 'openai';
 
 const prisma = new PrismaClient();
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+
+// OpenAI クライアントの初期化を関数内に移動
+function getOpenAIClient() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY environment variable is required');
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+}
 
 interface FileAttachment {
   id?: string;
@@ -71,6 +78,7 @@ export async function POST(request: NextRequest) {
     const messageContent = query + fileContext;
 
     // OpenAI APIを呼び出し
+    const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
