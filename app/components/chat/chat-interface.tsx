@@ -150,15 +150,26 @@ export default function ChatInterface() {
 
             const base64Images = await Promise.all(imagePromises)
 
-            // メッセージ履歴の準備
-            const messagesHistory = [...messages, userMessage].map(msg => ({
+            // メッセージ履歴の準備（現在のメッセージのみ画像を含める）
+            const messageHistory = [...messages].map(msg => ({
                 role: msg.role,
-                content: msg.content,
-                images: msg.images?.map((img, idx) => ({
-                    type: 'image_url',
-                    image_url: { url: base64Images[idx] || img.url }
-                }))
+                content: msg.content
             }))
+
+            // 現在のユーザーメッセージを追加（画像がある場合は含める）
+            const currentMessage: any = {
+                role: userMessage.role,
+                content: userMessage.content
+            }
+
+            if (base64Images.length > 0) {
+                currentMessage.images = base64Images.map(base64 => ({
+                    type: 'image_url',
+                    image_url: { url: base64 }
+                }))
+            }
+
+            const messagesHistory = [...messageHistory, currentMessage]
 
             // OpenRouterでストリーミングチャット
             const response = await fetch('/api/chat-openrouter', {
@@ -172,7 +183,10 @@ export default function ChatInterface() {
                 })
             })
 
-            if (!response.ok) throw new Error('Chat request failed')
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}))
+                throw new Error(errorData.error || `Chat request failed (${response.status})`)
+            }
 
             const reader = response.body?.getReader()
             const decoder = new TextDecoder()
