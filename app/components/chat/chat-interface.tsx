@@ -82,7 +82,7 @@ export default function ChatInterface() {
         if (!session?.user?.id) return
 
         try {
-            const response = await fetch('/api/conversations', {
+            const response = await fetch('/api/conversations/test', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -184,8 +184,16 @@ export default function ChatInterface() {
             })
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}))
-                throw new Error(errorData.error || `Chat request failed (${response.status})`)
+                let errorMessage = `Chat request failed (${response.status})`
+                try {
+                    const errorData = await response.json()
+                    errorMessage = errorData.error || errorMessage
+                } catch (jsonError) {
+                    console.warn('Failed to parse error response as JSON:', jsonError)
+                    const textResponse = await response.text().catch(() => 'Unknown error')
+                    errorMessage = `Server error: ${textResponse}`
+                }
+                throw new Error(errorMessage)
             }
 
             const reader = response.body?.getReader()
@@ -245,6 +253,14 @@ export default function ChatInterface() {
             }
         } catch (error) {
             console.error('Chat error:', error)
+            // エラーメッセージをユーザーに表示
+            const errorMessage: Message = {
+                id: `error_${Date.now()}`,
+                role: 'assistant',
+                content: `申し訳ございません。エラーが発生しました: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                timestamp: new Date()
+            }
+            setMessages(prev => [...prev, errorMessage])
         } finally {
             setIsLoading(false)
             setIsThinking(false)

@@ -18,16 +18,16 @@ export async function GET(request: NextRequest) {
     }
 
     const conversations = await prisma.conversation.findMany({
-      where: { userId },
+      where: { user_id: userId },
       include: {
         messages: {
-          orderBy: { createdAt: 'asc' },
+          orderBy: { created_at: 'asc' },
           include: {
             images: true
           }
         }
       },
-      orderBy: { updatedAt: 'desc' }
+      orderBy: { updated_at: 'desc' }
     })
 
     return NextResponse.json(conversations)
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     const conversation = await prisma.conversation.create({
       data: {
-        userId,
+        user_id: userId,
         title
       },
       include: {
