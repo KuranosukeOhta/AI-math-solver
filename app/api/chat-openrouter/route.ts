@@ -140,20 +140,24 @@ export async function POST(request: NextRequest) {
                 }
 
                 // 終了イベントの送信
-                const endEvent = {
-                  event: 'message_end',
-                  data: {
-                    id: messageId,
-                    conversation_id: conversationId,
-                    usage: {
-                      input_tokens: inputTokens,
-                      output_tokens: outputTokens,
-                      total_tokens: inputTokens + outputTokens
+                try {
+                  const endEvent = {
+                    event: 'message_end',
+                    data: {
+                      id: messageId,
+                      conversation_id: conversationId,
+                      usage: {
+                        input_tokens: inputTokens,
+                        output_tokens: outputTokens,
+                        total_tokens: inputTokens + outputTokens
+                      }
                     }
                   }
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify(endEvent)}\n\n`))
+                  controller.close()
+                } catch (controllerError) {
+                  console.log('Controller already closed:', controllerError)
                 }
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify(endEvent)}\n\n`))
-                controller.close()
                 break
               }
 
