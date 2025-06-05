@@ -27,7 +27,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
     // Check if student already exists using Prisma
     const existingUser = await prisma.user.findUnique({
-      where: { studentId: studentId }
+      where: { student_id: studentId }
     });
 
     if (existingUser) {
@@ -36,19 +36,19 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         success: false,
         message: 'この学番は既に登録されています'
       }, { status: 409 });
-      }
+    }
 
     console.log(`[/api/student/register] Creating new student record...`);
 
     // Create new user using Prisma
     const newUser = await prisma.user.create({
       data: {
-        studentId: studentId,
+        student_id: studentId,
         name: name,
         email: `${studentId}@student.example.com`, // Dummy email since it's required
-        password: 'dummy_password', // Dummy password since it's required
-        tokenUsage: 0,
-        estimatedCost: 0
+        password: 'dummy_password', // Default password
+        token_usage: 0,
+        estimated_cost: 0
       }
     });
 

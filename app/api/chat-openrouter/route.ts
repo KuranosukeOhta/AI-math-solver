@@ -27,40 +27,36 @@ const GPT4O_PRICE = {
  */
 const recordTokenUsage = async (userId: string, inputTokens: number, outputTokens: number, model: string) => {
   try {
-    // モデルに応じた価格設定
-    const prices = model.includes('o1-preview') ? O1_PREVIEW_PRICE : GPT4O_PRICE
-    
-    const totalTokens = inputTokens + outputTokens
-    const totalCost = ((inputTokens / 1000000) * prices.INPUT) + ((outputTokens / 1000000) * prices.OUTPUT)
+    const totalTokens = inputTokens + outputTokens;
+    const totalCost = ((inputTokens / 1000000) * O1_PREVIEW_PRICE.INPUT) + ((outputTokens / 1000000) * O1_PREVIEW_PRICE.OUTPUT);
 
     await prisma.tokenUsageLog.create({
       data: {
-        userId: userId,
-        inputTokens: inputTokens,
-        outputTokens: outputTokens,
-        totalTokens: totalTokens,
-        modelName: model,
+        user_id: userId,
+        input_tokens: inputTokens,
+        output_tokens: outputTokens,
+        total_tokens: totalTokens,
+        model_name: model,
         cost: totalCost
       }
-    })
+    });
 
-    // ユーザーの総トークン使用量とコストを更新
     await prisma.user.update({
       where: { id: userId },
       data: {
-        tokenUsage: {
+        token_usage: {
           increment: totalTokens
         },
-        estimatedCost: {
+        estimated_cost: {
           increment: totalCost
         }
       }
-    })
+    });
 
-    return true
+    return true;
   } catch (error) {
-    console.error('トークン使用量記録中のエラー:', error)
-    return false
+    console.error('トークン使用量記録中のエラー:', error);
+    return false;
   }
 }
 

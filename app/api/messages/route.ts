@@ -17,11 +17,13 @@ export async function GET(request: NextRequest) {
     }
 
     const messages = await prisma.message.findMany({
-      where: { conversationId },
+      where: { conversation_id: conversationId },
       include: {
         images: true
       },
-      orderBy: { createdAt: 'asc' }
+      orderBy: {
+        created_at: 'asc'
+      }
     })
 
     return NextResponse.json(messages)
@@ -41,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     if (!conversationId || !role || !content) {
       return NextResponse.json(
-        { error: '必要な情報が不足しています' }, 
+        { error: 'conversationId, role, content are required' },
         { status: 400 }
       )
     }
@@ -49,17 +51,17 @@ export async function POST(request: NextRequest) {
     // メッセージを作成
     const message = await prisma.message.create({
       data: {
-        conversationId,
+        conversation_id: conversationId,
         role,
         content,
         images: {
-          create: images.map((image: any) => ({
-            filename: image.id || `img_${Date.now()}`,
-            originalName: image.name || 'image',
-            mimeType: image.type || 'image/jpeg',
-            size: image.size || 0,
-            base64Data: image.base64 || image.url,
-            url: image.url
+          create: images.map((img: any) => ({
+            filename: img.filename,
+            original_name: img.originalName,
+            mime_type: img.mimeType,
+            size: img.size,
+            base64_data: img.base64Data,
+            url: img.url
           }))
         }
       },
@@ -71,14 +73,16 @@ export async function POST(request: NextRequest) {
     // 会話の更新日時を更新
     await prisma.conversation.update({
       where: { id: conversationId },
-      data: { updatedAt: new Date() }
+      data: {
+        updated_at: new Date()
+      }
     })
 
     return NextResponse.json(message)
   } catch (error) {
-    console.error('メッセージ保存エラー:', error)
+    console.error('メッセージ作成エラー:', error)
     return NextResponse.json(
-      { error: 'メッセージの保存に失敗しました' }, 
+      { error: 'メッセージの作成に失敗しました' }, 
       { status: 500 }
     )
   }

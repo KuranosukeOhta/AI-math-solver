@@ -25,9 +25,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       }, { status: 400 });
     }
 
-    // Find user using Prisma
+    // Find user by student ID
     const existingUser = await prisma.user.findUnique({
-      where: { studentId: studentId }
+      where: { student_id: studentId }
     });
 
     if (!existingUser) {
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       }, { status: 404 });
     }
 
-    // Validate name
+    // Check if name matches
     if (existingUser.name !== name) {
       console.log(`[/api/student/login] Name mismatch for studentId ${studentId}: expected ${existingUser.name}, got ${name}`);
       return NextResponse.json({
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       }, { status: 401 });
     }
 
-    console.log(`[/api/student/login] Login successful for user: ${existingUser.id}`);
+    console.log(`[/api/student/login] Login successful for studentId: ${studentId}`);
 
     const response = NextResponse.json({
       success: true,

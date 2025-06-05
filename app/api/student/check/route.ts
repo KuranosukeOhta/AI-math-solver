@@ -1,41 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { PrismaClient } from '@/app/generated/prisma';
 
 const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
-  console.log('[/api/student/check] GET request received'); // リクエスト開始ログ
   try {
-    // クッキーからユーザーIDを取得
-    console.log('[/api/student/check] Reading userId cookie'); // クッキー読み取り前ログ
-    const userId = request.cookies.get('userId')?.value;
-    console.log(`[/api/student/check] userId from cookie: ${userId}`); // クッキー読み取り結果ログ
+    const session = await getServerSession(authOptions);
     
-    if (!userId) {
-      console.log('[/api/student/check] userId cookie missing, returning 401'); // userIdなしログ
-      return NextResponse.json({ success: false, message: 'ユーザー情報が見つかりません' }, { status: 401 });
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    // ユーザー情報を取得
-    console.log(`[/api/student/check] Fetching user with ID: ${userId}`); // ユーザー情報取得前ログ
     const user = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { email: session.user.email },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        student_id: true,
+        token_usage: true,
+        estimated_cost: true,
+      }
     });
-    console.log(`[/api/student/check] User fetch result: ${user ? 'Found' : 'Not Found'}`); // ユーザー情報取得結果ログ
-    
+
     if (!user) {
-      console.log(`[/api/student/check] User with ID ${userId} not found in DB, returning 404`); // ユーザー見つからずログ
-      return NextResponse.json({ success: false, message: 'ユーザー情報が見つかりません' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
     }
 
-    console.log('[/api/student/check] User found, returning success response'); // ユーザー見つかったログ
     return NextResponse.json({
-      success: true,
-      studentId: user.studentId,
-      name: user.name,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        student_id: user.student_id,
+        token_usage: user.token_usage,
+        estimated_cost: user.estimated_cost,
+        has_student_id: !!user.student_id
+      }
     });
+
   } catch (error) {
-    console.error('[/api/student/check] Error:', error); // エラーログ
-    return NextResponse.json({ success: false, message: '予期せぬエラーが発生しました' }, { status: 500 });
+    console.error('[/api/student/check] Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 } 

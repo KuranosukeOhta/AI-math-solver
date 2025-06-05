@@ -15,9 +15,11 @@ export async function GET(
       where: { id: conversationId },
       include: {
         messages: {
-          orderBy: { createdAt: 'asc' },
           include: {
             images: true
+          },
+          orderBy: {
+            created_at: 'asc'
           }
         }
       }
@@ -25,23 +27,23 @@ export async function GET(
 
     if (!conversation) {
       return NextResponse.json(
-        { error: '会話が見つかりません' }, 
+        { error: '会話が見つかりません' },
         { status: 404 }
       )
     }
 
-    return NextResponse.json(conversation)
+    return NextResponse.json({ conversation })
   } catch (error) {
     console.error('会話取得エラー:', error)
     return NextResponse.json(
-      { error: '会話の取得に失敗しました' }, 
+      { error: '会話の取得に失敗しました' },
       { status: 500 }
     )
   }
 }
 
 // 会話のタイトル更新
-export async function PATCH(
+export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
@@ -51,29 +53,24 @@ export async function PATCH(
 
     if (!title) {
       return NextResponse.json(
-        { error: 'タイトルが必要です' }, 
+        { error: 'タイトルが必要です' },
         { status: 400 }
       )
     }
 
     const conversation = await prisma.conversation.update({
       where: { id: conversationId },
-      data: { title },
-      include: {
-        messages: {
-          orderBy: { createdAt: 'asc' },
-          include: {
-            images: true
-          }
-        }
+      data: {
+        title,
+        updated_at: new Date()
       }
     })
 
-    return NextResponse.json(conversation)
+    return NextResponse.json({ conversation })
   } catch (error) {
     console.error('会話更新エラー:', error)
     return NextResponse.json(
-      { error: '会話の更新に失敗しました' }, 
+      { error: '会話の更新に失敗しました' },
       { status: 500 }
     )
   }
@@ -91,11 +88,11 @@ export async function DELETE(
       where: { id: conversationId }
     })
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ message: '会話が削除されました' })
   } catch (error) {
     console.error('会話削除エラー:', error)
     return NextResponse.json(
-      { error: '会話の削除に失敗しました' }, 
+      { error: '会話の削除に失敗しました' },
       { status: 500 }
     )
   }
