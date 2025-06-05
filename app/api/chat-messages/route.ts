@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     // OpenRouterリクエストの準備
     const openRouterRequest = {
-      model: 'openai/gpt-4o',
+      model: 'openai/gpt-4o', // 規定設定: GPT-4o
       messages,
       stream: response_mode === 'streaming',
       temperature: 0.7,
@@ -83,6 +83,8 @@ export async function POST(request: NextRequest) {
             return
           }
 
+          let controllerClosed = false
+
           try {
             let buffer = ''
             let fullContent = ''
@@ -92,17 +94,25 @@ export async function POST(request: NextRequest) {
               
               if (done) {
                 // 最終メッセージイベント
-                const messageEndEvent = {
-                  event: 'message_end',
-                  task_id: taskId,
-                  id: messageId,
-                  message_id: messageId,
-                  conversation_id: conversationId,
-                  answer: fullContent,
-                  created_at: Math.floor(Date.now() / 1000)
+                if (!controllerClosed) {
+                  try {
+                    const messageEndEvent = {
+                      event: 'message_end',
+                      task_id: taskId,
+                      id: messageId,
+                      message_id: messageId,
+                      conversation_id: conversationId,
+                      answer: fullContent,
+                      created_at: Math.floor(Date.now() / 1000)
+                    }
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify(messageEndEvent)}\n\n`))
+                    controller.close()
+                    controllerClosed = true
+                  } catch (closeError) {
+                    console.log('Controller close error:', closeError)
+                    controllerClosed = true
+                  }
                 }
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify(messageEndEvent)}\n\n`))
-                controller.close()
                 break
               }
 
@@ -125,7 +135,7 @@ export async function POST(request: NextRequest) {
                       const choice = parsed.choices[0]
                       const content = choice.delta?.content || ''
 
-                      if (content) {
+                      if (content && !controllerClosed) {
                         fullContent += content
                         
                         // Dify形式のメッセージイベント
@@ -139,7 +149,12 @@ export async function POST(request: NextRequest) {
                           created_at: Math.floor(Date.now() / 1000)
                         }
 
-                        controller.enqueue(encoder.encode(`data: ${JSON.stringify(messageEvent)}\n\n`))
+                        try {
+                          controller.enqueue(encoder.encode(`data: ${JSON.stringify(messageEvent)}\n\n`))
+                        } catch (enqueueError) {
+                          console.log('Controller enqueue error:', enqueueError)
+                          controllerClosed = true
+                        }
                       }
                     }
                   } catch (parseError) {
@@ -150,7 +165,14 @@ export async function POST(request: NextRequest) {
             }
           } catch (error) {
             console.error('Stream processing error:', error)
-            controller.error(error)
+            if (!controllerClosed) {
+              try {
+                controller.error(error)
+                controllerClosed = true
+              } catch (errorHandleError) {
+                console.log('Controller error handling failed:', errorHandleError)
+              }
+            }
           }
         }
       })

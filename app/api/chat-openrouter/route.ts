@@ -6,7 +6,8 @@ const prisma = new PrismaClient()
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
-// 現在使用する思考モデル
+// デフォルトのチャットモデル（規定設定）
+const DEFAULT_MODEL = 'openai/gpt-4o'
 const REASONING_MODEL = 'openai/o1-preview'
 const CHAT_MODEL = 'openai/gpt-4o'
 
@@ -28,7 +29,11 @@ const GPT4O_PRICE = {
 const recordTokenUsage = async (userId: string, inputTokens: number, outputTokens: number, model: string) => {
   try {
     const totalTokens = inputTokens + outputTokens;
-    const totalCost = ((inputTokens / 1000000) * O1_PREVIEW_PRICE.INPUT) + ((outputTokens / 1000000) * O1_PREVIEW_PRICE.OUTPUT);
+    
+    // モデルに応じた料金計算
+    const isReasoningModel = model === REASONING_MODEL;
+    const priceConfig = isReasoningModel ? O1_PREVIEW_PRICE : GPT4O_PRICE;
+    const totalCost = ((inputTokens / 1000000) * priceConfig.INPUT) + ((outputTokens / 1000000) * priceConfig.OUTPUT);
 
     await prisma.tokenUsageLog.create({
       data: {
@@ -66,7 +71,7 @@ export async function POST(request: NextRequest) {
     const requestBody = await request.json()
     console.log('Request body received:', JSON.stringify(requestBody, null, 2))
     
-    const { messages, model = REASONING_MODEL, stream = true, userId } = requestBody
+    const { messages, model = DEFAULT_MODEL, stream = true, userId } = requestBody
 
     if (!OPENROUTER_API_KEY) {
       console.error('OpenRouter API key not configured')
@@ -87,12 +92,14 @@ export async function POST(request: NextRequest) {
       stream,
       temperature: 0.7,
       max_tokens: 4000,
-      // 思考プロセスの有効化
-      reasoning: {
-        enabled: true,
-        include_steps: true,
-        stream_steps: true
-      }
+      // o1-previewモデルの場合のみ思考プロセスを有効化
+      ...(model === REASONING_MODEL && {
+        reasoning: {
+          enabled: true,
+          include_steps: true,
+          stream_steps: true
+        }
+      })
     }
 
     console.log('OpenRouter request:', JSON.stringify(openRouterRequest, null, 2))
