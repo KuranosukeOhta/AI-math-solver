@@ -424,13 +424,13 @@ export const ssePost = (
         
         // Read and log the error details
         errorResponse.text().then((text: string) => {
-          console.error(`[DEBUG] Error response:`, text)
+          console.error(`[DEBUG] Error response (Status: ${res.status}):`, text.substring(0, 500) + '...')
           try {
             const errorData = JSON.parse(text)
             Toast.notify({ type: 'error', message: errorData.message || 'Server Error' })
           } catch (e) {
-            console.error(`[DEBUG] Failed to parse error response:`, e)
-            Toast.notify({ type: 'error', message: `Server Error (${res.status})` })
+            console.error(`[DEBUG] Failed to parse error response, showing truncated text`)
+            Toast.notify({ type: 'error', message: `API Error (${res.status})` })
           }
         }).catch((e: any) => {
           console.error(`[DEBUG] Failed to read error response:`, e)

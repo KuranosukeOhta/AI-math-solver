@@ -61,15 +61,24 @@ const recordTokenUsage = async (userId: string, inputTokens: number, outputToken
 }
 
 export async function POST(request: NextRequest) {
+  console.log('=== OpenRouter API Request Started ===')
   try {
-    const { messages, model = REASONING_MODEL, stream = true, userId } = await request.json()
+    const requestBody = await request.json()
+    console.log('Request body received:', JSON.stringify(requestBody, null, 2))
+    
+    const { messages, model = REASONING_MODEL, stream = true, userId } = requestBody
 
     if (!OPENROUTER_API_KEY) {
+      console.error('OpenRouter API key not configured')
       return NextResponse.json(
         { error: 'OpenRouter API key not configured' }, 
         { status: 500 }
       )
     }
+
+    console.log('Using model:', model)
+    console.log('Stream enabled:', stream)
+    console.log('User ID:', userId)
 
     // OpenRouterリクエストの準備
     const openRouterRequest = {
