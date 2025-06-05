@@ -37,7 +37,7 @@ export default function TestUIPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex flex-wrap gap-2">
-                            <Badge>o1-preview</Badge>
+                            <Badge>gpt-4o-mini</Badge>
                             <Badge variant="outline">GPT-4o</Badge>
                             <Badge variant="secondary">Claude</Badge>
                         </div>

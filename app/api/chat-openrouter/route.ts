@@ -6,21 +6,13 @@ const prisma = new PrismaClient()
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
-// デフォルトのチャットモデル（規定設定）
-const DEFAULT_MODEL = 'openai/gpt-4o'
-const REASONING_MODEL = 'openai/o1-preview'
-const CHAT_MODEL = 'openai/gpt-4o'
+// 使用モデル（コスト効率重視でo4-miniのみ使用）
+const DEFAULT_MODEL = 'openai/gpt-4o-mini'
 
-// o1-preview料金設定（1M tokensあたりの価格、単位: USD）
-const O1_PREVIEW_PRICE = {
-  INPUT: 15.00,   // $15.00 per 1M tokens
-  OUTPUT: 60.00   // $60.00 per 1M tokens
-}
-
-// GPT-4o料金設定（1M tokensあたりの価格、単位: USD）
-const GPT4O_PRICE = {
-  INPUT: 2.50,   // $2.50 per 1M tokens
-  OUTPUT: 10.00  // $10.00 per 1M tokens
+// GPT-4o-mini料金設定（1M tokensあたりの価格、単位: USD）
+const GPT4O_MINI_PRICE = {
+  INPUT: 0.15,   // $0.15 per 1M tokens
+  OUTPUT: 0.60   // $0.60 per 1M tokens
 }
 
 /**
@@ -30,10 +22,8 @@ const recordTokenUsage = async (userId: string, inputTokens: number, outputToken
   try {
     const totalTokens = inputTokens + outputTokens;
     
-    // モデルに応じた料金計算
-    const isReasoningModel = model === REASONING_MODEL;
-    const priceConfig = isReasoningModel ? O1_PREVIEW_PRICE : GPT4O_PRICE;
-    const totalCost = ((inputTokens / 1000000) * priceConfig.INPUT) + ((outputTokens / 1000000) * priceConfig.OUTPUT);
+    // GPT-4o-miniの料金計算
+    const totalCost = ((inputTokens / 1000000) * GPT4O_MINI_PRICE.INPUT) + ((outputTokens / 1000000) * GPT4O_MINI_PRICE.OUTPUT);
 
     await prisma.tokenUsageLog.create({
       data: {
@@ -91,15 +81,7 @@ export async function POST(request: NextRequest) {
       messages,
       stream,
       temperature: 0.7,
-      max_tokens: 4000,
-      // o1-previewモデルの場合のみ思考プロセスを有効化
-      ...(model === REASONING_MODEL && {
-        reasoning: {
-          enabled: true,
-          include_steps: true,
-          stream_steps: true
-        }
-      })
+      max_tokens: 4000
     }
 
     console.log('OpenRouter request:', JSON.stringify(openRouterRequest, null, 2))

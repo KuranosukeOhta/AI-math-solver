@@ -177,7 +177,7 @@ export default function ChatInterface() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     messages: messagesHistory,
-                    model: 'openai/o1-preview',
+                    model: 'openai/gpt-4o-mini',
                     stream: true,
                     userId: session.user.id
                 })
@@ -356,7 +356,7 @@ export default function ChatInterface() {
                             </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                            <Badge variant="outline">o1-preview</Badge>
+                            <Badge variant="outline">gpt-4o-mini</Badge>
                             <Avatar className="w-8 h-8">
                                 <AvatarImage src={session.user?.image || ''} />
                                 <AvatarFallback>

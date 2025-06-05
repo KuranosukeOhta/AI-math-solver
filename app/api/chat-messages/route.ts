@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     // OpenRouterリクエストの準備
     const openRouterRequest = {
-      model: 'openai/gpt-4o', // 規定設定: GPT-4o
+      model: 'openai/gpt-4o-mini', // 規定設定: GPT-4o-mini（コスト効率重視）
       messages,
       stream: response_mode === 'streaming',
       temperature: 0.7,
