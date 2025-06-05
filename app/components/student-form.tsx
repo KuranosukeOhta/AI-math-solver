@@ -197,7 +197,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ onRegister }) => {
                                     <Separator />
                                     <div className="flex items-center justify-between">
                                         <span className="font-medium">名前:</span>
-                                        <span>{savedName}</span>
+                                        <span>{savedName?.replace(/[\s\u3000]+/g, '')}</span>
                                     </div>
                                 </div>
                             </CardContent>
@@ -249,7 +249,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ onRegister }) => {
                                     <FormItem>
                                         <FormLabel>名前 <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input placeholder="山田 太郎" {...field} />
+                                            <Input placeholder="山田太郎" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
