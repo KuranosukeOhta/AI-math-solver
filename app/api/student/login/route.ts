@@ -21,7 +21,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       console.log(`[/api/student/login] Missing required fields: studentId=${studentId}, name=${name}`);
       return NextResponse.json({
         success: false,
-        message: 'Student ID and name are required'
+        message: '学番と名前を入力してください'
       }, { status: 400 });
     }
 
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       console.log(`[/api/student/login] Student not found: ${studentId}`);
       return NextResponse.json({
         success: false,
-        message: 'Student not found'
+        message: 'この学番は登録されていません。まず登録を行ってください。'
       }, { status: 404 });
     }
 
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       console.log(`[/api/student/login] Name mismatch for studentId ${studentId}: expected ${existingUser.name}, got ${name}`);
       return NextResponse.json({
         success: false,
-        message: 'Invalid student ID or name'
+        message: '学番または名前が正しくありません。登録時の情報と一致するか確認してください。'
       }, { status: 401 });
     }
 
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
     const response = NextResponse.json({
       success: true,
-      message: 'Login successful',
+      message: 'ログインが完了しました',
       data: {
         userId: existingUser.id
       }
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
     console.error('[/api/student/login] Login error:', error);
     return NextResponse.json({
       success: false,
-      message: 'Login failed'
+      message: 'ログイン処理中にエラーが発生しました。しばらくしてから再度お試しください。'
     }, { status: 500 });
   }
 } 

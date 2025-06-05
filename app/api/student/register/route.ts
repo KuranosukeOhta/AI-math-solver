@@ -21,7 +21,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       console.log(`[/api/student/register] Missing required fields: studentId=${studentId}, name=${name}`);
       return NextResponse.json({ 
         success: false, 
-        message: 'Student ID and name are required'
+        message: '学番と名前を入力してください'
       }, { status: 400 });
     }
 
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
     const response = NextResponse.json({
       success: true,
-      message: 'Student registered successfully',
+      message: '登録が完了しました',
       data: {
         userId: newUser.id
       }
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
     console.error('[/api/student/register] Registration error:', error);
     return NextResponse.json({
       success: false,
-      message: 'Registration failed'
+      message: '登録処理中にエラーが発生しました。しばらくしてから再度お試しください。'
     }, { status: 500 });
   }
 } 

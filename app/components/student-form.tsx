@@ -96,7 +96,18 @@ const StudentForm: React.FC<StudentFormProps> = ({ onRegister }) => {
             if (onRegister) onRegister()
         } catch (err: unknown) {
             console.error('StudentForm: Error during registration:', err)
-            const errorMessage = err instanceof Error ? err.message : '登録に失敗しました。もう一度お試しください。'
+            let errorMessage = err instanceof Error ? err.message : '登録に失敗しました。もう一度お試しください。'
+
+            // エラーメッセージを日本語でわかりやすく変換
+            if (errorMessage.includes('Student ID and name are required') || errorMessage.includes('学番と名前を入力してください')) {
+                errorMessage = '学番と名前の両方を入力してください。';
+            } else if (errorMessage.includes('Invalid student ID or name') || errorMessage.includes('学番または名前が正しくありません')) {
+                errorMessage = '学番または名前が正しくありません。登録時の情報と一致するか確認してください。';
+            } else if (errorMessage.includes('Student not found') || errorMessage.includes('この学番は登録されていません')) {
+                errorMessage = 'この学番は登録されていません。まず登録を行ってください。';
+            } else if (errorMessage.includes('Failed to fetch') || errorMessage.includes('fetch')) {
+                errorMessage = 'サーバーとの通信に失敗しました。インターネット接続を確認してください。';
+            }
 
             // 既に登録されている場合はログインを試行
             if (errorMessage.includes('既に登録されています')) {
@@ -112,7 +123,19 @@ const StudentForm: React.FC<StudentFormProps> = ({ onRegister }) => {
                     return // 成功したのでここで終了
                 } catch (loginErr: unknown) {
                     console.error('StudentForm: Error during login:', loginErr)
-                    const loginErrorMessage = loginErr instanceof Error ? loginErr.message : 'ログインに失敗しました。'
+                    let loginErrorMessage = loginErr instanceof Error ? loginErr.message : 'ログインに失敗しました。'
+
+                    // ログインエラーメッセージを日本語でわかりやすく変換
+                    if (loginErrorMessage.includes('Student ID and name are required') || loginErrorMessage.includes('学番と名前を入力してください')) {
+                        loginErrorMessage = '学番と名前の両方を入力してください。';
+                    } else if (loginErrorMessage.includes('Invalid student ID or name') || loginErrorMessage.includes('学番または名前が正しくありません')) {
+                        loginErrorMessage = '学番または名前が正しくありません。登録時の情報と一致するか確認してください。';
+                    } else if (loginErrorMessage.includes('Student not found') || loginErrorMessage.includes('この学番は登録されていません')) {
+                        loginErrorMessage = 'この学番は登録されていません。まず登録を行ってください。';
+                    } else if (loginErrorMessage.includes('Failed to fetch') || loginErrorMessage.includes('fetch')) {
+                        loginErrorMessage = 'サーバーとの通信に失敗しました。インターネット接続を確認してください。';
+                    }
+
                     setError(loginErrorMessage)
                     toast({
                         variant: "destructive",
