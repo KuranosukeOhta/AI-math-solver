@@ -1,14 +1,67 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { PrismaClient } from '@/app/generated/prisma'
+
+const prisma = new PrismaClient()
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
+// 使用モデル（o4-mini思考モデル - o1,o3,o4シリーズの最新版）
+const DEFAULT_MODEL = 'openai/o4-mini'
+
+// o4-mini料金設定（1M tokensあたりの価格、単位: USD）
+const O4_MINI_PRICE = {
+  INPUT: 1.10,   // $1.10 per 1M tokens
+  OUTPUT: 0.275  // $0.275 per 1M tokens
+}
+
+/**
+ * トークン使用量を記録する関数
+ */
+const recordTokenUsage = async (userId: string, inputTokens: number, outputTokens: number, model: string) => {
+  try {
+    const totalTokens = inputTokens + outputTokens;
+    
+    // o4-miniの料金計算
+    const totalCost = ((inputTokens / 1000000) * O4_MINI_PRICE.INPUT) + ((outputTokens / 1000000) * O4_MINI_PRICE.OUTPUT);
+
+    await prisma.tokenUsageLog.create({
+      data: {
+        user_id: userId,
+        input_tokens: inputTokens,
+        output_tokens: outputTokens,
+        total_tokens: totalTokens,
+        model_name: model,
+        cost: totalCost
+      }
+    });
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        token_usage: {
+          increment: totalTokens
+        },
+        estimated_cost: {
+          increment: totalCost
+        }
+      }
+    });
+
+    return true;
+  } catch (error) {
+    console.error('トークン使用量記録中のエラー:', error);
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
   console.log('=== Chat Messages API Request Started ===')
-  
   try {
-    const body = await request.json()
-    console.log('Request body received:', JSON.stringify(body, null, 2))
+    const requestBody = await request.json()
+    console.log('Request body received:', JSON.stringify(requestBody, null, 2))
+    
+    const { inputs, query, conversation_id, user, response_mode = "streaming", model = DEFAULT_MODEL } = requestBody
 
     if (!OPENROUTER_API_KEY) {
       console.error('OpenRouter API key not configured')
@@ -18,28 +71,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Dify形式のリクエストからOpenRouter形式に変換
-    const { query, conversation_id, inputs, files, user, response_mode } = body
-    
-    // メッセージ履歴を構築
+    // メッセージ配列の構築
     const messages = [
       {
         role: 'user',
         content: query
       }
     ]
-    
-    // ファイルがある場合は統合
-    if (files && files.length > 0) {
-      console.log('Files received:', files.length)
-      // ファイル処理をここに追加可能
-    }
 
     // OpenRouterリクエストの準備
     const openRouterRequest = {
-      model: 'openai/gpt-4o-mini', // 規定設定: GPT-4o-mini（コスト効率重視）
+      model,
       messages,
-      stream: response_mode === 'streaming',
+      stream: response_mode === "streaming",
       temperature: 0.7,
       max_tokens: 4000
     }
@@ -66,14 +110,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (response_mode === 'streaming') {
-      // ストリーミングレスポンスをDify形式に変換
+    if (response_mode === "streaming") {
+      // ストリーミングレスポンスの処理
       const encoder = new TextEncoder()
       const decoder = new TextDecoder()
 
-      const conversationId = conversation_id || `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      const taskId = `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      let messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      let inputTokens = 0
+      let outputTokens = 0
+      let fullContent = ''
 
       const readableStream = new ReadableStream({
         async start(controller) {
@@ -84,32 +129,42 @@ export async function POST(request: NextRequest) {
           }
 
           let controllerClosed = false
-
+          
           try {
             let buffer = ''
-            let fullContent = ''
             
             while (true) {
               const { done, value } = await reader.read()
               
               if (done) {
-                // 最終メッセージイベント
+                // ユーザーIDの抽出と使用量記録
+                if (user && inputTokens > 0) {
+                  const userId = user.includes(':') ? user.split(':')[1] : user;
+                  if (userId && userId !== 'undefined') {
+                    await recordTokenUsage(userId, inputTokens, outputTokens, model)
+                  }
+                }
+
+                // 終了イベントの送信
                 if (!controllerClosed) {
                   try {
-                    const messageEndEvent = {
+                    const endEvent = {
                       event: 'message_end',
-                      task_id: taskId,
-                      id: messageId,
-                      message_id: messageId,
-                      conversation_id: conversationId,
-                      answer: fullContent,
-                      created_at: Math.floor(Date.now() / 1000)
+                      data: {
+                        id: messageId,
+                        conversation_id: conversation_id,
+                        usage: {
+                          input_tokens: inputTokens,
+                          output_tokens: outputTokens,
+                          total_tokens: inputTokens + outputTokens
+                        }
+                      }
                     }
-                    controller.enqueue(encoder.encode(`data: ${JSON.stringify(messageEndEvent)}\n\n`))
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify(endEvent)}\n\n`))
                     controller.close()
                     controllerClosed = true
-                  } catch (closeError) {
-                    console.log('Controller close error:', closeError)
+                  } catch (controllerError) {
+                    console.log('Controller already closed:', controllerError)
                     controllerClosed = true
                   }
                 }
@@ -131,6 +186,12 @@ export async function POST(request: NextRequest) {
                   try {
                     const parsed = JSON.parse(data)
                     
+                    // 使用状況の追跡
+                    if (parsed.usage) {
+                      inputTokens = parsed.usage.prompt_tokens || 0
+                      outputTokens = parsed.usage.completion_tokens || 0
+                    }
+
                     if (parsed.choices && parsed.choices[0]) {
                       const choice = parsed.choices[0]
                       const content = choice.delta?.content || ''
@@ -138,22 +199,45 @@ export async function POST(request: NextRequest) {
                       if (content && !controllerClosed) {
                         fullContent += content
                         
-                        // Dify形式のメッセージイベント
-                        const messageEvent = {
+                        // Dify形式のメッセージデータの構築
+                        const messageData = {
                           event: 'message',
-                          task_id: taskId,
-                          id: messageId,
-                          message_id: messageId,
-                          conversation_id: conversationId,
-                          answer: content,
-                          created_at: Math.floor(Date.now() / 1000)
+                          data: {
+                            id: messageId,
+                            conversation_id: conversation_id,
+                            answer: content,
+                            created_at: Date.now()
+                          }
                         }
 
                         try {
-                          controller.enqueue(encoder.encode(`data: ${JSON.stringify(messageEvent)}\n\n`))
+                          controller.enqueue(encoder.encode(`data: ${JSON.stringify(messageData)}\n\n`))
                         } catch (enqueueError) {
                           console.log('Controller enqueue error:', enqueueError)
                           controllerClosed = true
+                        }
+                      }
+
+                      // 思考プロセスの処理（o4-miniでサポートされている場合）
+                      if (choice.delta?.reasoning) {
+                        const reasoningData = {
+                          event: 'agent_thought',
+                          data: {
+                            id: `thought_${Date.now()}`,
+                            chain_id: messageId,
+                            position: parsed.reasoning?.step || 0,
+                            thought: choice.delta.reasoning,
+                            created_at: Date.now()
+                          }
+                        }
+
+                        if (!controllerClosed) {
+                          try {
+                            controller.enqueue(encoder.encode(`data: ${JSON.stringify(reasoningData)}\n\n`))
+                          } catch (enqueueError) {
+                            console.log('Reasoning enqueue error:', enqueueError)
+                            controllerClosed = true
+                          }
                         }
                       }
                     }
@@ -188,24 +272,32 @@ export async function POST(request: NextRequest) {
       // 非ストリーミングレスポンス
       const data = await response.json()
       
-      // Dify形式のレスポンスに変換
-      const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      const conversationId = conversation_id || `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      
+      // トークン使用量の記録
+      if (user && data.usage) {
+        const userId = user.includes(':') ? user.split(':')[1] : user;
+        if (userId && userId !== 'undefined') {
+          await recordTokenUsage(
+            userId, 
+            data.usage.prompt_tokens || 0, 
+            data.usage.completion_tokens || 0, 
+            model
+          )
+        }
+      }
+
+      // Dify互換形式でレスポンス
       const difyResponse = {
-        event: 'message',
-        task_id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        id: messageId,
-        message_id: messageId,
-        conversation_id: conversationId,
-        answer: data.choices[0]?.message?.content || '',
-        created_at: Math.floor(Date.now() / 1000)
+        conversation_id: conversation_id,
+        message_id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        answer: data.choices?.[0]?.message?.content || '',
+        created_at: Date.now(),
+        usage: data.usage || {}
       }
 
       return NextResponse.json(difyResponse)
     }
   } catch (error) {
-    console.error('Chat messages API error:', error)
+    console.error('Chat messages error:', error)
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }

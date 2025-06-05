@@ -200,101 +200,107 @@ export default function ChatPage() {
                 onFile: (file) => {
                     console.log("ファイル:", file)
                 },
-                onMessageReplace: (messageReplace) => {
-                    console.log("メッセージ置換:", messageReplace)
+                onWorkflowStarted: ({ workflow_run_id, task_id }) => {
+                    console.log("ワークフロー開始:", { workflow_run_id, task_id })
                 },
-                onWorkflowStarted: () => { },
-                onNodeStarted: () => { },
-                onNodeFinished: () => { },
-                onWorkflowFinished: () => { }
+                onWorkflowFinished: ({ data }) => {
+                    console.log("ワークフロー完了:", data)
+                },
+                onTextChunk: (text) => {
+                    console.log("テキストチャンク:", text.substring(0, 20))
+                },
+                onTextReplace: (text) => {
+                    console.log("テキスト置換:", text.substring(0, 20))
+                }
             })
         } catch (error) {
-            console.error('API呼び出しエラー:', error)
+            console.error('メッセージ送信エラー:', error)
             setIsResponding(false)
-            notify({ type: 'error', message: 'エラーが発生しました。もう一度お試しください。' })
+            notify({ type: 'error', message: ERROR_MESSAGES.SERVER })
         }
     }
 
     // フィードバック処理
     const handleFeedback = async (messageId: string, feedback: Feedbacktype) => {
         try {
-            // API URL形式を修正
-            const feedbackUrl = `messages/${messageId}/feedbacks`
-            await updateFeedback({
-                url: feedbackUrl,
-                body: {
-                    rating: feedback.rating,
-                    user: userIdRef.current // ユーザーIDを含める
-                }
-            })
-
-            setChatList(prev => prev.map(item =>
-                item.id === messageId ? { ...item, feedback } : item
-            ))
-
-            notify({ type: 'success', message: 'フィードバックを送信しました' })
-        } catch (err) {
-            console.error('フィードバック送信エラー:', err)
-            notify({ type: 'error', message: 'フィードバックの送信に失敗しました' })
+            await updateFeedback({ messageId, rating: feedback.rating })
+            setChatList(prev =>
+                prev.map(item =>
+                    item.id === messageId
+                        ? { ...item, feedback }
+                        : item
+                )
+            )
+        } catch (error) {
+            console.error('フィードバックエラー:', error)
         }
     }
 
+    // 送信可能かチェック
     const checkCanSend = () => {
-        return true // 必要に応じて送信可能かどうかのチェックロジックを追加
+        return isRegistered && !isResponding
     }
 
     if (!isRegistered) {
         return (
-            <div className="flex h-screen items-center justify-center">
-                <div className="flex flex-col items-center space-y-4">
-                    <Skeleton className="h-12 w-12 rounded-full" />
-                    <div className="space-y-2">
-                        <Skeleton className="h-4 w-[250px]" />
-                        <Skeleton className="h-4 w-[200px]" />
-                    </div>
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-center">
+                    <Skeleton className="h-8 w-48 mb-4" />
+                    <Skeleton className="h-4 w-32" />
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-background">
-            <header className="sticky top-0 z-10 border-b bg-card shadow-sm">
-                <div className="container mx-auto flex h-16 items-center justify-between px-4">
-                    <h1 className="text-xl font-bold text-foreground">AI数学ソルバー</h1>
-                    <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                            <AvatarFallback>
-                                <User className="h-4 w-4" />
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="text-sm text-muted-foreground">
-                            {name} ({studentId})
+        <div className="flex flex-col h-screen bg-background">
+            {/* ヘッダー */}
+            <header className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-b">
+                <div className="container mx-auto px-4 py-3">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                            <h1 className="text-lg font-semibold text-primary">AI Math Solver</h1>
                         </div>
+                        {name && (
+                            <div className="flex items-center space-x-2">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarFallback>
+                                        <User className="h-4 w-4" />
+                                    </AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm text-muted-foreground">{name}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </header>
 
-            <main className="container mx-auto py-6 px-4">
-                <Card className="border-none shadow-none">
-                    <CardContent className="p-0">
-                        <Chat
-                            chatList={chatList}
-                            onSend={handleSend}
-                            onFeedback={handleFeedback}
-                            isResponding={isResponding}
-                            checkCanSend={checkCanSend}
-                            visionConfig={{
-                                enabled: true,
-                                number_limits: 5,
-                                image_file_size_limit: 10,
-                                detail: 'high' as Resolution,
-                                transfer_methods: [TransferMethod.local_file]
-                            }}
-                        />
-                    </CardContent>
-                </Card>
-            </main>
+            {/* メインコンテンツエリア - フレックスで高さを調整 */}
+            <div className="flex-1 flex flex-col min-h-0">
+                <Chat
+                    chatList={chatList}
+                    onSend={handleSend}
+                    isResponding={isResponding}
+                    onFeedback={handleFeedback}
+                    checkCanSend={checkCanSend}
+                    abortController={abortControllerRef.current}
+                    files={[]}
+                    onFilesChange={() => { }}
+                    supportAgent
+                    visionConfig={{
+                        enabled: true,
+                        details: 'auto',
+                        number_limits: 1,
+                        transfer_methods: [TransferMethod.remote_url]
+                    }}
+                    speechToTextConfig={{
+                        enabled: false
+                    }}
+                    chatContainerClassName="flex-1 min-h-0"
+                    chatFooterClassName="flex-shrink-0 border-t bg-background/50 backdrop-blur"
+                    chatFooterInnerClassName="container mx-auto px-4 py-4"
+                />
+            </div>
         </div>
     )
 } 

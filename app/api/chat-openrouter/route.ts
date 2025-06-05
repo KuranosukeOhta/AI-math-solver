@@ -6,11 +6,11 @@ const prisma = new PrismaClient()
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
-// 使用モデル（コスト効率重視でo4-miniのみ使用）
-const DEFAULT_MODEL = 'openai/gpt-4o-mini'
+// 使用モデル（o4-mini思考モデル - o1,o3,o4シリーズの最新版）
+const DEFAULT_MODEL = 'openai/o4-mini'
 
-// GPT-4o-mini料金設定（1M tokensあたりの価格、単位: USD）
-const GPT4O_MINI_PRICE = {
+// o4-mini料金設定（1M tokensあたりの価格、単位: USD）
+const O4_MINI_PRICE = {
   INPUT: 1.10,   // $1.10 per 1M tokens
   OUTPUT: 0.275  // $0.275 per 1M tokens
 }
@@ -22,8 +22,8 @@ const recordTokenUsage = async (userId: string, inputTokens: number, outputToken
   try {
     const totalTokens = inputTokens + outputTokens;
     
-    // GPT-4o-miniの料金計算
-    const totalCost = ((inputTokens / 1000000) * GPT4O_MINI_PRICE.INPUT) + ((outputTokens / 1000000) * GPT4O_MINI_PRICE.OUTPUT);
+    // o4-miniの料金計算
+    const totalCost = ((inputTokens / 1000000) * O4_MINI_PRICE.INPUT) + ((outputTokens / 1000000) * O4_MINI_PRICE.OUTPUT);
 
     await prisma.tokenUsageLog.create({
       data: {
