@@ -11,8 +11,8 @@ const DEFAULT_MODEL = 'openai/gpt-4o-mini'
 
 // GPT-4o-mini料金設定（1M tokensあたりの価格、単位: USD）
 const GPT4O_MINI_PRICE = {
-  INPUT: 0.15,   // $0.15 per 1M tokens
-  OUTPUT: 0.60   // $0.60 per 1M tokens
+  INPUT: 1.10,   // $1.10 per 1M tokens
+  OUTPUT: 0.275  // $0.275 per 1M tokens
 }
 
 /**
@@ -125,6 +125,8 @@ export async function POST(request: NextRequest) {
             return
           }
 
+          let controllerClosed = false
+          
           try {
             let buffer = ''
             
@@ -138,23 +140,27 @@ export async function POST(request: NextRequest) {
                 }
 
                 // 終了イベントの送信
-                try {
-                  const endEvent = {
-                    event: 'message_end',
-                    data: {
-                      id: messageId,
-                      conversation_id: conversationId,
-                      usage: {
-                        input_tokens: inputTokens,
-                        output_tokens: outputTokens,
-                        total_tokens: inputTokens + outputTokens
+                if (!controllerClosed) {
+                  try {
+                    const endEvent = {
+                      event: 'message_end',
+                      data: {
+                        id: messageId,
+                        conversation_id: conversationId,
+                        usage: {
+                          input_tokens: inputTokens,
+                          output_tokens: outputTokens,
+                          total_tokens: inputTokens + outputTokens
+                        }
                       }
                     }
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify(endEvent)}\n\n`))
+                    controller.close()
+                    controllerClosed = true
+                  } catch (controllerError) {
+                    console.log('Controller already closed:', controllerError)
+                    controllerClosed = true
                   }
-                  controller.enqueue(encoder.encode(`data: ${JSON.stringify(endEvent)}\n\n`))
-                  controller.close()
-                } catch (controllerError) {
-                  console.log('Controller already closed:', controllerError)
                 }
                 break
               }
@@ -184,7 +190,7 @@ export async function POST(request: NextRequest) {
                       const choice = parsed.choices[0]
                       const content = choice.delta?.content || ''
 
-                      if (content) {
+                      if (content && !controllerClosed) {
                         fullContent += content
                         
                         // メッセージデータの構築
@@ -198,7 +204,12 @@ export async function POST(request: NextRequest) {
                           }
                         }
 
-                        controller.enqueue(encoder.encode(`data: ${JSON.stringify(messageData)}\n\n`))
+                        try {
+                          controller.enqueue(encoder.encode(`data: ${JSON.stringify(messageData)}\n\n`))
+                        } catch (enqueueError) {
+                          console.log('Controller enqueue error:', enqueueError)
+                          controllerClosed = true
+                        }
                       }
 
                       // 思考プロセスの処理
@@ -225,7 +236,14 @@ export async function POST(request: NextRequest) {
             }
           } catch (error) {
             console.error('Stream processing error:', error)
-            controller.error(error)
+            if (!controllerClosed) {
+              try {
+                controller.error(error)
+                controllerClosed = true
+              } catch (errorHandleError) {
+                console.log('Controller error handling failed:', errorHandleError)
+              }
+            }
           }
         }
       })
