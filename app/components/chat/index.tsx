@@ -15,6 +15,7 @@ import ChatImageUploader from '@/app/components/base/image-uploader/chat-image-u
 import ImageList from '@/app/components/base/image-uploader/image-list'
 import FileUploaderInAttachmentWrapper from '@/app/components/base/file-uploader-in-attachment'
 import { useImageFiles } from '@/app/components/base/image-uploader/hooks'
+import { useFile } from '@/app/components/base/file-uploader-in-attachment/hooks'
 import { useTokenRecorder } from '@/app/hooks/use-token-recorder'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
@@ -187,6 +188,17 @@ const Chat: FC<IChatProps> = ({
 
   const effectiveFileConfig = fileConfig || defaultFileConfig
 
+  // ファイルアップロード用フック（ドラッグ&ドロップとコピペ対応）
+  const {
+    handleLocalFileUpload,
+    handleClipboardPasteFile,
+    isDragActive,
+    handleDragFileEnter,
+    handleDragFileOver,
+    handleDragFileLeave,
+    handleDropFile,
+  } = useFile(effectiveFileConfig)
+
   return (
     <div className={cn(!feedbackDisabled && 'px-3.5', 'h-full')}>
       {/* Chat List */}
@@ -216,7 +228,22 @@ const Chat: FC<IChatProps> = ({
       {
         !isHideSendInput && (
           <div className={cn(!feedbackDisabled && '!left-3.5 !right-3.5', 'fixed z-10 bottom-6 left-0 right-0 max-w-7xl mx-auto px-4')}>
-            <Card className="border shadow-md p-2">
+            <Card className="border shadow-md p-2"
+              onDragEnter={handleDragFileEnter}
+              onDragOver={handleDragFileOver}
+              onDragLeave={handleDragFileLeave}
+              onDrop={handleDropFile}
+            >
+              {/* ドラッグ&ドロップオーバーレイ */}
+              {isDragActive && (
+                <div className="absolute inset-0 bg-blue-50/80 border-2 border-dashed border-blue-500 rounded-lg flex items-center justify-center z-10">
+                  <div className="text-blue-600 text-center">
+                    <PaperclipIcon className="h-8 w-8 mx-auto mb-2" />
+                    <p className="text-sm font-medium">ファイルをドロップしてアップロード</p>
+                  </div>
+                </div>
+              )}
+
               {/* Attachment Section */}
               <div className="mb-2 flex items-center space-x-2">
                 {/* Image Upload Toggle */}
@@ -258,7 +285,7 @@ const Chat: FC<IChatProps> = ({
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>文書ファイルをアップロード</p>
+                      <p>文書ファイルをアップロード（D&D・コピペ対応）</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -305,11 +332,12 @@ const Chat: FC<IChatProps> = ({
               <div className="flex items-end space-x-2">
                 <Textarea
                   className="min-h-[40px] max-h-[200px] resize-none"
-                  placeholder="メッセージを入力してください..."
+                  placeholder="メッセージを入力してください...（ファイルのドラッグ&ドロップ、コピペも可能）"
                   value={query}
                   onChange={handleContentChange}
                   onKeyUp={handleKeyUp}
                   onKeyDown={handleKeyDown}
+                  onPaste={handleClipboardPasteFile}
                 />
                 <Button
                   onClick={handleSend}

@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
     })
 
     console.log(`[SUCCESS] User ${userId} total usage updated - added ${totalTokens} tokens, $${cost.toFixed(8)}`);
-
+    
     // 成功レスポンスを返す
     return NextResponse.json({ 
       success: true, 

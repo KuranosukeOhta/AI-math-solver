@@ -89,11 +89,11 @@ export function StudentProvider({ children }: { children: ReactNode }) {
                     console.log('StudentContext: Registration successful, isRegistered set to true');
                     return responseData;
                 }
-                console.log('StudentContext: Registration failed, data.success is false');
-                throw new Error(responseData.message || '登録に失敗しました');
-            }
-            console.log('StudentContext: Registration failed, response not ok:', responseData);
-            throw new Error(responseData.message || `登録に失敗しました (${response.status})`);
+                    console.log('StudentContext: Registration failed, data.success is false');
+                    throw new Error(responseData.message || '登録に失敗しました');
+                }
+                console.log('StudentContext: Registration failed, response not ok:', responseData);
+                throw new Error(responseData.message || `登録に失敗しました (${response.status})`);
         } catch (error: unknown) {
             console.error('学生情報登録エラー:', error);
             if (error instanceof TypeError && error.message.includes('Failed to fetch')) {

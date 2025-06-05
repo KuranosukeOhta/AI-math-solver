@@ -19,8 +19,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
     if (!studentId || !name) {
       console.log(`[/api/student/register] Missing required fields: studentId=${studentId}, name=${name}`);
-      return NextResponse.json({
-        success: false,
+      return NextResponse.json({ 
+        success: false, 
         message: 'Student ID and name are required'
       }, { status: 400 });
     }
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         success: false,
         message: 'この学番は既に登録されています'
       }, { status: 409 });
-    }
+      }
 
     console.log(`[/api/student/register] Creating new student record...`);
 

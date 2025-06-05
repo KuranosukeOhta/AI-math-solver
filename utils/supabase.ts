@@ -103,7 +103,7 @@ export const updateStudentId = async (userId: string, studentId: string, name: s
     
     if (existingUser) {
       return { success: false, message: 'この学生IDは既に使用されています' };
-    }
+  }
 
     // 学生IDと名前を更新
     await prisma.user.update({
