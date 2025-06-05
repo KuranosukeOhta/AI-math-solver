@@ -1,149 +1,239 @@
--- AI Math Solver アプリケーション用のSupabaseスキーマ
--- PrismaスキーマからSupabaseに適用するためのSQL
--- 必要に応じて既存のテーブルを削除（注意：データが失われます）
--- DROP TABLE IF EXISTS public."MessageImage" CASCADE;
--- DROP TABLE IF EXISTS public."Message" CASCADE;
--- DROP TABLE IF EXISTS public."Conversation" CASCADE;
--- DROP TABLE IF EXISTS public."SharedConversation" CASCADE;
--- DROP TABLE IF EXISTS public."TokenUsageLog" CASCADE;
--- DROP TABLE IF EXISTS public."User" CASCADE;
--- ユーザーテーブル
-CREATE TABLE IF NOT EXISTS public."User" (
-    id TEXT PRIMARY KEY DEFAULT concat('user_', gen_random_uuid()::text),
+-- ===============================================
+-- AI Math Solver Database Schema (snake_case統一版)
+-- PostgreSQL / Supabase用
+-- ===============================================
+-- 既存テーブルを削除（注意：本番環境では慎重に実行）
+DROP TABLE IF EXISTS public.shared_conversations CASCADE;
+DROP TABLE IF EXISTS public.message_images CASCADE;
+DROP TABLE IF EXISTS public.messages CASCADE;
+DROP TABLE IF EXISTS public.conversations CASCADE;
+DROP TABLE IF EXISTS public.token_usage_logs CASCADE;
+DROP TABLE IF EXISTS public.users CASCADE;
+-- ===============================================
+-- 1. USERS テーブル
+-- ===============================================
+CREATE TABLE public.users (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     name TEXT,
-    "studentId" TEXT UNIQUE,
-    "tokenUsage" INTEGER DEFAULT 0,
-    "estimatedCost" DOUBLE PRECISION DEFAULT 0,
-    "createdAt" TIMESTAMPTZ DEFAULT NOW(),
-    "updatedAt" TIMESTAMPTZ DEFAULT NOW(),
+    student_id TEXT UNIQUE,
+    token_usage INTEGER DEFAULT 0 NOT NULL,
+    estimated_cost DOUBLE PRECISION DEFAULT 0 NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     -- Google OAuth関連
-    "googleId" TEXT UNIQUE,
-    "profileImage" TEXT
+    google_id TEXT UNIQUE,
+    profile_image TEXT
 );
--- 会話テーブル
-CREATE TABLE IF NOT EXISTS public."Conversation" (
-    id TEXT PRIMARY KEY DEFAULT concat('conv_', gen_random_uuid()::text),
-    "userId" TEXT NOT NULL REFERENCES public."User"(id) ON DELETE CASCADE,
-    title TEXT DEFAULT '新しい会話',
-    "createdAt" TIMESTAMPTZ DEFAULT NOW(),
-    "updatedAt" TIMESTAMPTZ DEFAULT NOW()
+-- ===============================================
+-- 2. TOKEN_USAGE_LOGS テーブル
+-- ===============================================
+CREATE TABLE public.token_usage_logs (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
+    user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    input_tokens INTEGER NOT NULL,
+    output_tokens INTEGER NOT NULL,
+    total_tokens INTEGER NOT NULL,
+    model_name TEXT NOT NULL,
+    cost DOUBLE PRECISION NOT NULL,
+    conversation_id TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
--- メッセージテーブル
-CREATE TABLE IF NOT EXISTS public."Message" (
-    id TEXT PRIMARY KEY DEFAULT concat('msg_', gen_random_uuid()::text),
-    "conversationId" TEXT NOT NULL REFERENCES public."Conversation"(id) ON DELETE CASCADE,
+-- ===============================================
+-- 3. CONVERSATIONS テーブル
+-- ===============================================
+CREATE TABLE public.conversations (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
+    user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    title TEXT DEFAULT '新しい会話' NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+-- ===============================================
+-- 4. MESSAGES テーブル
+-- ===============================================
+CREATE TABLE public.messages (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
+    conversation_id TEXT NOT NULL REFERENCES public.conversations(id) ON DELETE CASCADE,
     role TEXT NOT NULL CHECK (role IN ('user', 'assistant', 'system')),
     content TEXT NOT NULL,
-    "createdAt" TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
--- メッセージ画像テーブル
-CREATE TABLE IF NOT EXISTS public."MessageImage" (
-    id TEXT PRIMARY KEY DEFAULT concat('img_', gen_random_uuid()::text),
-    "messageId" TEXT NOT NULL REFERENCES public."Message"(id) ON DELETE CASCADE,
+-- ===============================================
+-- 5. MESSAGE_IMAGES テーブル
+-- ===============================================
+CREATE TABLE public.message_images (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
+    message_id TEXT NOT NULL REFERENCES public.messages(id) ON DELETE CASCADE,
     filename TEXT NOT NULL,
-    "originalName" TEXT,
-    "mimeType" TEXT NOT NULL,
+    original_name TEXT,
+    mime_type TEXT NOT NULL,
     size INTEGER NOT NULL,
-    "base64Data" TEXT NOT NULL,
+    base64_data TEXT NOT NULL,
     url TEXT,
-    "createdAt" TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
--- トークン使用量ログテーブル
-CREATE TABLE IF NOT EXISTS public."TokenUsageLog" (
-    id TEXT PRIMARY KEY DEFAULT concat('token_', gen_random_uuid()::text),
-    "userId" TEXT NOT NULL REFERENCES public."User"(id) ON DELETE CASCADE,
-    "inputTokens" INTEGER NOT NULL,
-    "outputTokens" INTEGER NOT NULL,
-    "totalTokens" INTEGER NOT NULL,
-    "modelName" TEXT NOT NULL,
-    cost DOUBLE PRECISION NOT NULL,
-    "conversationId" TEXT,
-    "createdAt" TIMESTAMPTZ DEFAULT NOW()
-);
--- 🆕 シェアされた会話テーブル（新機能）
-CREATE TABLE IF NOT EXISTS public."SharedConversation" (
-    id TEXT PRIMARY KEY DEFAULT concat('share_', gen_random_uuid()::text),
-    "conversationId" TEXT NOT NULL REFERENCES public."Conversation"(id) ON DELETE CASCADE,
-    "shareId" TEXT UNIQUE NOT NULL DEFAULT concat('s_', substring(gen_random_uuid()::text, 1, 8)),
+-- ===============================================
+-- 6. SHARED_CONVERSATIONS テーブル（シェア機能）
+-- ===============================================
+CREATE TABLE public.shared_conversations (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
+    conversation_id TEXT NOT NULL REFERENCES public.conversations(id) ON DELETE CASCADE,
+    share_id TEXT UNIQUE DEFAULT gen_random_uuid()::TEXT NOT NULL,
     title TEXT NOT NULL,
-    "isPublic" BOOLEAN DEFAULT true,
-    "expiresAt" TIMESTAMPTZ,
-    "viewCount" INTEGER DEFAULT 0,
-    "createdAt" TIMESTAMPTZ DEFAULT NOW(),
-    "updatedAt" TIMESTAMPTZ DEFAULT NOW()
+    is_public BOOLEAN DEFAULT true NOT NULL,
+    expires_at TIMESTAMPTZ,
+    view_count INTEGER DEFAULT 0 NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
--- インデックスの作成
-CREATE INDEX IF NOT EXISTS "idx_conversation_userId" ON public."Conversation"("userId");
-CREATE INDEX IF NOT EXISTS "idx_message_conversationId" ON public."Message"("conversationId");
-CREATE INDEX IF NOT EXISTS "idx_messageImage_messageId" ON public."MessageImage"("messageId");
-CREATE INDEX IF NOT EXISTS "idx_tokenUsageLog_userId" ON public."TokenUsageLog"("userId");
-CREATE INDEX IF NOT EXISTS "idx_sharedConversation_shareId" ON public."SharedConversation"("shareId");
-CREATE INDEX IF NOT EXISTS "idx_sharedConversation_conversationId" ON public."SharedConversation"("conversationId");
--- RLS (Row Level Security) の設定
-ALTER TABLE public."User" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public."Conversation" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public."Message" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public."MessageImage" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public."TokenUsageLog" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public."SharedConversation" ENABLE ROW LEVEL SECURITY;
--- RLS ポリシー（ユーザーは自分のデータのみアクセス可能）
-CREATE POLICY "Users can view own data" ON public."User" FOR ALL USING (auth.uid()::text = id);
-CREATE POLICY "Users can view own conversations" ON public."Conversation" FOR ALL USING (auth.uid()::text = "userId");
-CREATE POLICY "Users can view own messages" ON public."Message" FOR ALL USING (
-    EXISTS (
-        SELECT 1
-        FROM public."Conversation"
-        WHERE id = "conversationId"
-            AND "userId" = auth.uid()::text
-    )
-);
-CREATE POLICY "Users can view own message images" ON public."MessageImage" FOR ALL USING (
-    EXISTS (
-        SELECT 1
-        FROM public."Message" m
-            JOIN public."Conversation" c ON m."conversationId" = c.id
-        WHERE m.id = "messageId"
-            AND c."userId" = auth.uid()::text
-    )
-);
-CREATE POLICY "Users can view own token usage" ON public."TokenUsageLog" FOR ALL USING (auth.uid()::text = "userId");
--- シェアされた会話は公開可能
-CREATE POLICY "Shared conversations are publicly viewable" ON public."SharedConversation" FOR
+-- ===============================================
+-- インデックス作成
+-- ===============================================
+-- パフォーマンス向上のためのインデックス
+CREATE INDEX idx_users_email ON public.users(email);
+CREATE INDEX idx_users_student_id ON public.users(student_id);
+CREATE INDEX idx_users_google_id ON public.users(google_id);
+CREATE INDEX idx_token_usage_logs_user_id ON public.token_usage_logs(user_id);
+CREATE INDEX idx_token_usage_logs_created_at ON public.token_usage_logs(created_at);
+CREATE INDEX idx_conversations_user_id ON public.conversations(user_id);
+CREATE INDEX idx_conversations_created_at ON public.conversations(created_at);
+CREATE INDEX idx_messages_conversation_id ON public.messages(conversation_id);
+CREATE INDEX idx_messages_created_at ON public.messages(created_at);
+CREATE INDEX idx_message_images_message_id ON public.message_images(message_id);
+CREATE INDEX idx_shared_conversations_share_id ON public.shared_conversations(share_id);
+CREATE INDEX idx_shared_conversations_conversation_id ON public.shared_conversations(conversation_id);
+CREATE INDEX idx_shared_conversations_expires_at ON public.shared_conversations(expires_at);
+-- ===============================================
+-- Row Level Security (RLS) ポリシー
+-- ===============================================
+-- RLS有効化
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.token_usage_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.message_images ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.shared_conversations ENABLE ROW LEVEL SECURITY;
+-- USERSテーブルのポリシー
+CREATE POLICY "Users can view own profile" ON public.users FOR
+SELECT USING (auth.uid()::TEXT = id);
+CREATE POLICY "Users can update own profile" ON public.users FOR
+UPDATE USING (auth.uid()::TEXT = id);
+-- TOKEN_USAGE_LOGSテーブルのポリシー
+CREATE POLICY "Users can view own token usage" ON public.token_usage_logs FOR
+SELECT USING (auth.uid()::TEXT = user_id);
+CREATE POLICY "System can insert token usage" ON public.token_usage_logs FOR
+INSERT WITH CHECK (true);
+-- CONVERSATIONSテーブルのポリシー
+CREATE POLICY "Users can view own conversations" ON public.conversations FOR
+SELECT USING (auth.uid()::TEXT = user_id);
+CREATE POLICY "Users can create own conversations" ON public.conversations FOR
+INSERT WITH CHECK (auth.uid()::TEXT = user_id);
+CREATE POLICY "Users can update own conversations" ON public.conversations FOR
+UPDATE USING (auth.uid()::TEXT = user_id);
+CREATE POLICY "Users can delete own conversations" ON public.conversations FOR DELETE USING (auth.uid()::TEXT = user_id);
+-- MESSAGESテーブルのポリシー
+CREATE POLICY "Users can view messages in own conversations" ON public.messages FOR
 SELECT USING (
-        "isPublic" = true
-        AND (
-            "expiresAt" IS NULL
-            OR "expiresAt" > NOW()
+        conversation_id IN (
+            SELECT id
+            FROM public.conversations
+            WHERE user_id = auth.uid()::TEXT
         )
     );
-CREATE POLICY "Users can manage own shared conversations" ON public."SharedConversation" FOR ALL USING (
-    EXISTS (
-        SELECT 1
-        FROM public."Conversation"
-        WHERE id = "conversationId"
-            AND "userId" = auth.uid()::text
+CREATE POLICY "Users can create messages in own conversations" ON public.messages FOR
+INSERT WITH CHECK (
+        conversation_id IN (
+            SELECT id
+            FROM public.conversations
+            WHERE user_id = auth.uid()::TEXT
+        )
+    );
+-- MESSAGE_IMAGESテーブルのポリシー
+CREATE POLICY "Users can view images in own messages" ON public.message_images FOR
+SELECT USING (
+        message_id IN (
+            SELECT m.id
+            FROM public.messages m
+                JOIN public.conversations c ON m.conversation_id = c.id
+            WHERE c.user_id = auth.uid()::TEXT
+        )
+    );
+CREATE POLICY "Users can create images in own messages" ON public.message_images FOR
+INSERT WITH CHECK (
+        message_id IN (
+            SELECT m.id
+            FROM public.messages m
+                JOIN public.conversations c ON m.conversation_id = c.id
+            WHERE c.user_id = auth.uid()::TEXT
+        )
+    );
+-- SHARED_CONVERSATIONSテーブルのポリシー
+CREATE POLICY "Users can view own shared conversations" ON public.shared_conversations FOR
+SELECT USING (
+        conversation_id IN (
+            SELECT id
+            FROM public.conversations
+            WHERE user_id = auth.uid()::TEXT
+        )
+    );
+CREATE POLICY "Anyone can view public shared conversations" ON public.shared_conversations FOR
+SELECT USING (
+        is_public = true
+        AND (
+            expires_at IS NULL
+            OR expires_at > NOW()
+        )
+    );
+CREATE POLICY "Users can create shares for own conversations" ON public.shared_conversations FOR
+INSERT WITH CHECK (
+        conversation_id IN (
+            SELECT id
+            FROM public.conversations
+            WHERE user_id = auth.uid()::TEXT
+        )
+    );
+CREATE POLICY "Users can update own shared conversations" ON public.shared_conversations FOR
+UPDATE USING (
+        conversation_id IN (
+            SELECT id
+            FROM public.conversations
+            WHERE user_id = auth.uid()::TEXT
+        )
+    );
+CREATE POLICY "Users can delete own shared conversations" ON public.shared_conversations FOR DELETE USING (
+    conversation_id IN (
+        SELECT id
+        FROM public.conversations
+        WHERE user_id = auth.uid()::TEXT
     )
 );
--- 更新日時の自動更新関数
-CREATE OR REPLACE FUNCTION update_updated_at_column() RETURNS TRIGGER AS $$ BEGIN NEW."updatedAt" = NOW();
+-- ===============================================
+-- トリガー関数とトリガー
+-- ===============================================
+-- updated_at自動更新関数
+CREATE OR REPLACE FUNCTION update_updated_at_column() RETURNS TRIGGER AS $$ BEGIN NEW.updated_at = NOW();
 RETURN NEW;
 END;
-$$ language 'plpgsql';
--- トリガーの設定
-CREATE TRIGGER update_user_updated_at BEFORE
-UPDATE ON public."User" FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
-CREATE TRIGGER update_conversation_updated_at BEFORE
-UPDATE ON public."Conversation" FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
-CREATE TRIGGER update_shared_conversation_updated_at BEFORE
-UPDATE ON public."SharedConversation" FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
--- サンプルデータの挿入（オプション）
--- INSERT INTO public."User" (id, email, password, name) VALUES 
--- ('test_user', 'test@example.com', 'hashed_password', 'テストユーザー');
-COMMENT ON TABLE public."User" IS 'ユーザー情報を管理するテーブル';
-COMMENT ON TABLE public."Conversation" IS 'チャット会話を管理するテーブル';
-COMMENT ON TABLE public."Message" IS 'チャットメッセージを管理するテーブル';
-COMMENT ON TABLE public."MessageImage" IS 'メッセージに添付された画像を管理するテーブル';
-COMMENT ON TABLE public."TokenUsageLog" IS 'AIモデルのトークン使用量を記録するテーブル';
-COMMENT ON TABLE public."SharedConversation" IS 'シェアされた会話を管理するテーブル（新機能）';
+$$ LANGUAGE plpgsql;
+-- updated_atトリガー
+CREATE TRIGGER update_users_updated_at BEFORE
+UPDATE ON public.users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_conversations_updated_at BEFORE
+UPDATE ON public.conversations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_shared_conversations_updated_at BEFORE
+UPDATE ON public.shared_conversations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- ===============================================
+-- 初期データの挿入例
+-- ===============================================
+-- サンプルユーザー（開発環境用）
+-- INSERT INTO public.users (id, email, password, name, student_id) VALUES
+-- ('sample-user-1', 'test@example.com', 'hashed_password_here', 'テストユーザー', 'ab12345');
+-- ===============================================
+-- 完了メッセージ
+-- ===============================================
+DO $$ BEGIN RAISE NOTICE 'Database schema created successfully with snake_case naming convention!';
+RAISE NOTICE 'Tables created: users, token_usage_logs, conversations, messages, message_images, shared_conversations';
+RAISE NOTICE 'RLS policies and triggers are enabled.';
+END $$;

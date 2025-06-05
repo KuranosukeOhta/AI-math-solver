@@ -125,53 +125,65 @@ exports.Prisma.UserScalarFieldEnum = {
   email: 'email',
   password: 'password',
   name: 'name',
-  studentId: 'studentId',
-  tokenUsage: 'tokenUsage',
-  estimatedCost: 'estimatedCost',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  googleId: 'googleId',
-  profileImage: 'profileImage'
+  student_id: 'student_id',
+  token_usage: 'token_usage',
+  estimated_cost: 'estimated_cost',
+  created_at: 'created_at',
+  updated_at: 'updated_at',
+  google_id: 'google_id',
+  profile_image: 'profile_image'
 };
 
 exports.Prisma.TokenUsageLogScalarFieldEnum = {
   id: 'id',
-  userId: 'userId',
-  inputTokens: 'inputTokens',
-  outputTokens: 'outputTokens',
-  totalTokens: 'totalTokens',
-  modelName: 'modelName',
+  user_id: 'user_id',
+  input_tokens: 'input_tokens',
+  output_tokens: 'output_tokens',
+  total_tokens: 'total_tokens',
+  model_name: 'model_name',
   cost: 'cost',
-  conversationId: 'conversationId',
-  createdAt: 'createdAt'
+  conversation_id: 'conversation_id',
+  created_at: 'created_at'
 };
 
 exports.Prisma.ConversationScalarFieldEnum = {
   id: 'id',
-  userId: 'userId',
+  user_id: 'user_id',
   title: 'title',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  created_at: 'created_at',
+  updated_at: 'updated_at'
 };
 
 exports.Prisma.MessageScalarFieldEnum = {
   id: 'id',
-  conversationId: 'conversationId',
+  conversation_id: 'conversation_id',
   role: 'role',
   content: 'content',
-  createdAt: 'createdAt'
+  created_at: 'created_at'
 };
 
 exports.Prisma.MessageImageScalarFieldEnum = {
   id: 'id',
-  messageId: 'messageId',
+  message_id: 'message_id',
   filename: 'filename',
-  originalName: 'originalName',
-  mimeType: 'mimeType',
+  original_name: 'original_name',
+  mime_type: 'mime_type',
   size: 'size',
-  base64Data: 'base64Data',
+  base64_data: 'base64_data',
   url: 'url',
-  createdAt: 'createdAt'
+  created_at: 'created_at'
+};
+
+exports.Prisma.SharedConversationScalarFieldEnum = {
+  id: 'id',
+  conversation_id: 'conversation_id',
+  share_id: 'share_id',
+  title: 'title',
+  is_public: 'is_public',
+  expires_at: 'expires_at',
+  view_count: 'view_count',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
 };
 
 exports.Prisma.SortOrder = {
@@ -195,7 +207,8 @@ exports.Prisma.ModelName = {
   TokenUsageLog: 'TokenUsageLog',
   Conversation: 'Conversation',
   Message: 'Message',
-  MessageImage: 'MessageImage'
+  MessageImage: 'MessageImage',
+  SharedConversation: 'SharedConversation'
 };
 
 /**

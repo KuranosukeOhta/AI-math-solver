@@ -17,78 +17,110 @@ datasource db {
 }
 
 model User {
-  id             String          @id @default(cuid())
-  email          String          @unique
+  id             String   @id @default(cuid())
+  email          String   @unique
   password       String
   name           String?
-  studentId      String?         @unique
-  tokenUsage     Int             @default(0)
-  estimatedCost  Float           @default(0)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  tokenUsageLogs TokenUsageLog[]
-  conversations  Conversation[]
+  student_id     String?  @unique @map("student_id")
+  token_usage    Int      @default(0) @map("token_usage")
+  estimated_cost Float    @default(0) @map("estimated_cost")
+  created_at     DateTime @default(now()) @map("created_at")
+  updated_at     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  token_usage_logs TokenUsageLog[] @relation("UserTokenUsage")
+  conversations    Conversation[]  @relation("UserConversations")
 
   // Google OAuth関連
-  googleId     String? @unique
-  profileImage String?
+  google_id     String? @unique @map("google_id")
+  profile_image String? @map("profile_image")
 
+  @@map("users")
   @@schema("public")
 }
 
 model TokenUsageLog {
-  id             String   @id @default(cuid())
-  userId         String
-  user           User     @relation(fields: [userId], references: [id])
-  inputTokens    Int
-  outputTokens   Int
-  totalTokens    Int
-  modelName      String
-  cost           Float
-  conversationId String?
-  createdAt      DateTime @default(now())
+  id              String   @id @default(cuid())
+  user_id         String   @map("user_id")
+  input_tokens    Int      @map("input_tokens")
+  output_tokens   Int      @map("output_tokens")
+  total_tokens    Int      @map("total_tokens")
+  model_name      String   @map("model_name")
+  cost            Float
+  conversation_id String?  @map("conversation_id")
+  created_at      DateTime @default(now()) @map("created_at")
 
+  // Relations
+  user User @relation("UserTokenUsage", fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("token_usage_logs")
   @@schema("public")
 }
 
 model Conversation {
-  id        String   @id @default(cuid())
-  userId    String
-  title     String   @default("新しい会話")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  user_id    String   @map("user_id")
+  title      String   @default("新しい会話")
+  created_at DateTime @default(now()) @map("created_at")
+  updated_at DateTime @updatedAt @map("updated_at")
 
-  user     User      @relation(fields: [userId], references: [id])
-  messages Message[]
+  // Relations
+  user                 User                 @relation("UserConversations", fields: [user_id], references: [id], onDelete: Cascade)
+  messages             Message[]            @relation("ConversationMessages")
+  shared_conversations SharedConversation[] @relation("ConversationShares")
 
+  @@map("conversations")
   @@schema("public")
 }
 
 model Message {
-  id             String   @id @default(cuid())
-  conversationId String
-  role           String // 'user', 'assistant', 'system'
-  content        String
-  createdAt      DateTime @default(now())
+  id              String   @id @default(cuid())
+  conversation_id String   @map("conversation_id")
+  role            String // 'user', 'assistant', 'system'
+  content         String
+  created_at      DateTime @default(now()) @map("created_at")
 
-  conversation Conversation   @relation(fields: [conversationId], references: [id])
-  images       MessageImage[]
+  // Relations
+  conversation Conversation   @relation("ConversationMessages", fields: [conversation_id], references: [id], onDelete: Cascade)
+  images       MessageImage[] @relation("MessageImages")
 
+  @@map("messages")
   @@schema("public")
 }
 
 model MessageImage {
-  id           String   @id @default(cuid())
-  messageId    String
-  filename     String
-  originalName String?
-  mimeType     String
-  size         Int
-  base64Data   String   @db.Text
-  url          String?
-  createdAt    DateTime @default(now())
+  id            String   @id @default(cuid())
+  message_id    String   @map("message_id")
+  filename      String
+  original_name String?  @map("original_name")
+  mime_type     String   @map("mime_type")
+  size          Int
+  base64_data   String   @map("base64_data") @db.Text
+  url           String?
+  created_at    DateTime @default(now()) @map("created_at")
 
-  message Message @relation(fields: [messageId], references: [id])
+  // Relations
+  message Message @relation("MessageImages", fields: [message_id], references: [id], onDelete: Cascade)
 
+  @@map("message_images")
+  @@schema("public")
+}
+
+// 🆕 シェアされた会話のモデル
+model SharedConversation {
+  id              String    @id @default(cuid())
+  conversation_id String    @map("conversation_id")
+  share_id        String    @unique @default(cuid()) @map("share_id")
+  title           String
+  is_public       Boolean   @default(true) @map("is_public")
+  expires_at      DateTime? @map("expires_at")
+  view_count      Int       @default(0) @map("view_count")
+  created_at      DateTime  @default(now()) @map("created_at")
+  updated_at      DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  conversation Conversation @relation("ConversationShares", fields: [conversation_id], references: [id], onDelete: Cascade)
+
+  @@map("shared_conversations")
   @@schema("public")
 }

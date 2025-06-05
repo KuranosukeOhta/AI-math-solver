@@ -38,6 +38,11 @@ export type Message = $Result.DefaultSelection<Prisma.$MessagePayload>
  * 
  */
 export type MessageImage = $Result.DefaultSelection<Prisma.$MessageImagePayload>
+/**
+ * Model SharedConversation
+ * 
+ */
+export type SharedConversation = $Result.DefaultSelection<Prisma.$SharedConversationPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -213,6 +218,16 @@ export class PrismaClient<
     * ```
     */
   get messageImage(): Prisma.MessageImageDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.sharedConversation`: Exposes CRUD operations for the **SharedConversation** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more SharedConversations
+    * const sharedConversations = await prisma.sharedConversation.findMany()
+    * ```
+    */
+  get sharedConversation(): Prisma.SharedConversationDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -657,7 +672,8 @@ export namespace Prisma {
     TokenUsageLog: 'TokenUsageLog',
     Conversation: 'Conversation',
     Message: 'Message',
-    MessageImage: 'MessageImage'
+    MessageImage: 'MessageImage',
+    SharedConversation: 'SharedConversation'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -676,7 +692,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "tokenUsageLog" | "conversation" | "message" | "messageImage"
+      modelProps: "user" | "tokenUsageLog" | "conversation" | "message" | "messageImage" | "sharedConversation"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1050,6 +1066,80 @@ export namespace Prisma {
           }
         }
       }
+      SharedConversation: {
+        payload: Prisma.$SharedConversationPayload<ExtArgs>
+        fields: Prisma.SharedConversationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SharedConversationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SharedConversationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SharedConversationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SharedConversationPayload>
+          }
+          findFirst: {
+            args: Prisma.SharedConversationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SharedConversationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SharedConversationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SharedConversationPayload>
+          }
+          findMany: {
+            args: Prisma.SharedConversationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SharedConversationPayload>[]
+          }
+          create: {
+            args: Prisma.SharedConversationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SharedConversationPayload>
+          }
+          createMany: {
+            args: Prisma.SharedConversationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.SharedConversationCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SharedConversationPayload>[]
+          }
+          delete: {
+            args: Prisma.SharedConversationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SharedConversationPayload>
+          }
+          update: {
+            args: Prisma.SharedConversationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SharedConversationPayload>
+          }
+          deleteMany: {
+            args: Prisma.SharedConversationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SharedConversationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.SharedConversationUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SharedConversationPayload>[]
+          }
+          upsert: {
+            args: Prisma.SharedConversationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SharedConversationPayload>
+          }
+          aggregate: {
+            args: Prisma.SharedConversationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSharedConversation>
+          }
+          groupBy: {
+            args: Prisma.SharedConversationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SharedConversationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.SharedConversationCountArgs<ExtArgs>
+            result: $Utils.Optional<SharedConversationCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1139,6 +1229,7 @@ export namespace Prisma {
     conversation?: ConversationOmit
     message?: MessageOmit
     messageImage?: MessageImageOmit
+    sharedConversation?: SharedConversationOmit
   }
 
   /* Types for Logging */
@@ -1233,12 +1324,12 @@ export namespace Prisma {
    */
 
   export type UserCountOutputType = {
-    tokenUsageLogs: number
+    token_usage_logs: number
     conversations: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    tokenUsageLogs?: boolean | UserCountOutputTypeCountTokenUsageLogsArgs
+    token_usage_logs?: boolean | UserCountOutputTypeCountToken_usage_logsArgs
     conversations?: boolean | UserCountOutputTypeCountConversationsArgs
   }
 
@@ -1256,7 +1347,7 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountTokenUsageLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type UserCountOutputTypeCountToken_usage_logsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TokenUsageLogWhereInput
   }
 
@@ -1274,10 +1365,12 @@ export namespace Prisma {
 
   export type ConversationCountOutputType = {
     messages: number
+    shared_conversations: number
   }
 
   export type ConversationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     messages?: boolean | ConversationCountOutputTypeCountMessagesArgs
+    shared_conversations?: boolean | ConversationCountOutputTypeCountShared_conversationsArgs
   }
 
   // Custom InputTypes
@@ -1296,6 +1389,13 @@ export namespace Prisma {
    */
   export type ConversationCountOutputTypeCountMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MessageWhereInput
+  }
+
+  /**
+   * ConversationCountOutputType without action
+   */
+  export type ConversationCountOutputTypeCountShared_conversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SharedConversationWhereInput
   }
 
 
@@ -1347,13 +1447,13 @@ export namespace Prisma {
   }
 
   export type UserAvgAggregateOutputType = {
-    tokenUsage: number | null
-    estimatedCost: number | null
+    token_usage: number | null
+    estimated_cost: number | null
   }
 
   export type UserSumAggregateOutputType = {
-    tokenUsage: number | null
-    estimatedCost: number | null
+    token_usage: number | null
+    estimated_cost: number | null
   }
 
   export type UserMinAggregateOutputType = {
@@ -1361,13 +1461,13 @@ export namespace Prisma {
     email: string | null
     password: string | null
     name: string | null
-    studentId: string | null
-    tokenUsage: number | null
-    estimatedCost: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    googleId: string | null
-    profileImage: string | null
+    student_id: string | null
+    token_usage: number | null
+    estimated_cost: number | null
+    created_at: Date | null
+    updated_at: Date | null
+    google_id: string | null
+    profile_image: string | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -1375,13 +1475,13 @@ export namespace Prisma {
     email: string | null
     password: string | null
     name: string | null
-    studentId: string | null
-    tokenUsage: number | null
-    estimatedCost: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    googleId: string | null
-    profileImage: string | null
+    student_id: string | null
+    token_usage: number | null
+    estimated_cost: number | null
+    created_at: Date | null
+    updated_at: Date | null
+    google_id: string | null
+    profile_image: string | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -1389,25 +1489,25 @@ export namespace Prisma {
     email: number
     password: number
     name: number
-    studentId: number
-    tokenUsage: number
-    estimatedCost: number
-    createdAt: number
-    updatedAt: number
-    googleId: number
-    profileImage: number
+    student_id: number
+    token_usage: number
+    estimated_cost: number
+    created_at: number
+    updated_at: number
+    google_id: number
+    profile_image: number
     _all: number
   }
 
 
   export type UserAvgAggregateInputType = {
-    tokenUsage?: true
-    estimatedCost?: true
+    token_usage?: true
+    estimated_cost?: true
   }
 
   export type UserSumAggregateInputType = {
-    tokenUsage?: true
-    estimatedCost?: true
+    token_usage?: true
+    estimated_cost?: true
   }
 
   export type UserMinAggregateInputType = {
@@ -1415,13 +1515,13 @@ export namespace Prisma {
     email?: true
     password?: true
     name?: true
-    studentId?: true
-    tokenUsage?: true
-    estimatedCost?: true
-    createdAt?: true
-    updatedAt?: true
-    googleId?: true
-    profileImage?: true
+    student_id?: true
+    token_usage?: true
+    estimated_cost?: true
+    created_at?: true
+    updated_at?: true
+    google_id?: true
+    profile_image?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -1429,13 +1529,13 @@ export namespace Prisma {
     email?: true
     password?: true
     name?: true
-    studentId?: true
-    tokenUsage?: true
-    estimatedCost?: true
-    createdAt?: true
-    updatedAt?: true
-    googleId?: true
-    profileImage?: true
+    student_id?: true
+    token_usage?: true
+    estimated_cost?: true
+    created_at?: true
+    updated_at?: true
+    google_id?: true
+    profile_image?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -1443,13 +1543,13 @@ export namespace Prisma {
     email?: true
     password?: true
     name?: true
-    studentId?: true
-    tokenUsage?: true
-    estimatedCost?: true
-    createdAt?: true
-    updatedAt?: true
-    googleId?: true
-    profileImage?: true
+    student_id?: true
+    token_usage?: true
+    estimated_cost?: true
+    created_at?: true
+    updated_at?: true
+    google_id?: true
+    profile_image?: true
     _all?: true
   }
 
@@ -1544,13 +1644,13 @@ export namespace Prisma {
     email: string
     password: string
     name: string | null
-    studentId: string | null
-    tokenUsage: number
-    estimatedCost: number
-    createdAt: Date
-    updatedAt: Date
-    googleId: string | null
-    profileImage: string | null
+    student_id: string | null
+    token_usage: number
+    estimated_cost: number
+    created_at: Date
+    updated_at: Date
+    google_id: string | null
+    profile_image: string | null
     _count: UserCountAggregateOutputType | null
     _avg: UserAvgAggregateOutputType | null
     _sum: UserSumAggregateOutputType | null
@@ -1577,14 +1677,14 @@ export namespace Prisma {
     email?: boolean
     password?: boolean
     name?: boolean
-    studentId?: boolean
-    tokenUsage?: boolean
-    estimatedCost?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    googleId?: boolean
-    profileImage?: boolean
-    tokenUsageLogs?: boolean | User$tokenUsageLogsArgs<ExtArgs>
+    student_id?: boolean
+    token_usage?: boolean
+    estimated_cost?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    google_id?: boolean
+    profile_image?: boolean
+    token_usage_logs?: boolean | User$token_usage_logsArgs<ExtArgs>
     conversations?: boolean | User$conversationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
@@ -1594,13 +1694,13 @@ export namespace Prisma {
     email?: boolean
     password?: boolean
     name?: boolean
-    studentId?: boolean
-    tokenUsage?: boolean
-    estimatedCost?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    googleId?: boolean
-    profileImage?: boolean
+    student_id?: boolean
+    token_usage?: boolean
+    estimated_cost?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    google_id?: boolean
+    profile_image?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -1608,13 +1708,13 @@ export namespace Prisma {
     email?: boolean
     password?: boolean
     name?: boolean
-    studentId?: boolean
-    tokenUsage?: boolean
-    estimatedCost?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    googleId?: boolean
-    profileImage?: boolean
+    student_id?: boolean
+    token_usage?: boolean
+    estimated_cost?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    google_id?: boolean
+    profile_image?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
@@ -1622,18 +1722,18 @@ export namespace Prisma {
     email?: boolean
     password?: boolean
     name?: boolean
-    studentId?: boolean
-    tokenUsage?: boolean
-    estimatedCost?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    googleId?: boolean
-    profileImage?: boolean
+    student_id?: boolean
+    token_usage?: boolean
+    estimated_cost?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    google_id?: boolean
+    profile_image?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "password" | "name" | "studentId" | "tokenUsage" | "estimatedCost" | "createdAt" | "updatedAt" | "googleId" | "profileImage", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "password" | "name" | "student_id" | "token_usage" | "estimated_cost" | "created_at" | "updated_at" | "google_id" | "profile_image", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    tokenUsageLogs?: boolean | User$tokenUsageLogsArgs<ExtArgs>
+    token_usage_logs?: boolean | User$token_usage_logsArgs<ExtArgs>
     conversations?: boolean | User$conversationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -1643,7 +1743,7 @@ export namespace Prisma {
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
     objects: {
-      tokenUsageLogs: Prisma.$TokenUsageLogPayload<ExtArgs>[]
+      token_usage_logs: Prisma.$TokenUsageLogPayload<ExtArgs>[]
       conversations: Prisma.$ConversationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -1651,13 +1751,13 @@ export namespace Prisma {
       email: string
       password: string
       name: string | null
-      studentId: string | null
-      tokenUsage: number
-      estimatedCost: number
-      createdAt: Date
-      updatedAt: Date
-      googleId: string | null
-      profileImage: string | null
+      student_id: string | null
+      token_usage: number
+      estimated_cost: number
+      created_at: Date
+      updated_at: Date
+      google_id: string | null
+      profile_image: string | null
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -2052,7 +2152,7 @@ export namespace Prisma {
    */
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    tokenUsageLogs<T extends User$tokenUsageLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$tokenUsageLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TokenUsageLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    token_usage_logs<T extends User$token_usage_logsArgs<ExtArgs> = {}>(args?: Subset<T, User$token_usage_logsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TokenUsageLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     conversations<T extends User$conversationsArgs<ExtArgs> = {}>(args?: Subset<T, User$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -2087,13 +2187,13 @@ export namespace Prisma {
     readonly email: FieldRef<"User", 'String'>
     readonly password: FieldRef<"User", 'String'>
     readonly name: FieldRef<"User", 'String'>
-    readonly studentId: FieldRef<"User", 'String'>
-    readonly tokenUsage: FieldRef<"User", 'Int'>
-    readonly estimatedCost: FieldRef<"User", 'Float'>
-    readonly createdAt: FieldRef<"User", 'DateTime'>
-    readonly updatedAt: FieldRef<"User", 'DateTime'>
-    readonly googleId: FieldRef<"User", 'String'>
-    readonly profileImage: FieldRef<"User", 'String'>
+    readonly student_id: FieldRef<"User", 'String'>
+    readonly token_usage: FieldRef<"User", 'Int'>
+    readonly estimated_cost: FieldRef<"User", 'Float'>
+    readonly created_at: FieldRef<"User", 'DateTime'>
+    readonly updated_at: FieldRef<"User", 'DateTime'>
+    readonly google_id: FieldRef<"User", 'String'>
+    readonly profile_image: FieldRef<"User", 'String'>
   }
     
 
@@ -2482,9 +2582,9 @@ export namespace Prisma {
   }
 
   /**
-   * User.tokenUsageLogs
+   * User.token_usage_logs
    */
-  export type User$tokenUsageLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$token_usage_logsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the TokenUsageLog
      */
@@ -2561,105 +2661,105 @@ export namespace Prisma {
   }
 
   export type TokenUsageLogAvgAggregateOutputType = {
-    inputTokens: number | null
-    outputTokens: number | null
-    totalTokens: number | null
+    input_tokens: number | null
+    output_tokens: number | null
+    total_tokens: number | null
     cost: number | null
   }
 
   export type TokenUsageLogSumAggregateOutputType = {
-    inputTokens: number | null
-    outputTokens: number | null
-    totalTokens: number | null
+    input_tokens: number | null
+    output_tokens: number | null
+    total_tokens: number | null
     cost: number | null
   }
 
   export type TokenUsageLogMinAggregateOutputType = {
     id: string | null
-    userId: string | null
-    inputTokens: number | null
-    outputTokens: number | null
-    totalTokens: number | null
-    modelName: string | null
+    user_id: string | null
+    input_tokens: number | null
+    output_tokens: number | null
+    total_tokens: number | null
+    model_name: string | null
     cost: number | null
-    conversationId: string | null
-    createdAt: Date | null
+    conversation_id: string | null
+    created_at: Date | null
   }
 
   export type TokenUsageLogMaxAggregateOutputType = {
     id: string | null
-    userId: string | null
-    inputTokens: number | null
-    outputTokens: number | null
-    totalTokens: number | null
-    modelName: string | null
+    user_id: string | null
+    input_tokens: number | null
+    output_tokens: number | null
+    total_tokens: number | null
+    model_name: string | null
     cost: number | null
-    conversationId: string | null
-    createdAt: Date | null
+    conversation_id: string | null
+    created_at: Date | null
   }
 
   export type TokenUsageLogCountAggregateOutputType = {
     id: number
-    userId: number
-    inputTokens: number
-    outputTokens: number
-    totalTokens: number
-    modelName: number
+    user_id: number
+    input_tokens: number
+    output_tokens: number
+    total_tokens: number
+    model_name: number
     cost: number
-    conversationId: number
-    createdAt: number
+    conversation_id: number
+    created_at: number
     _all: number
   }
 
 
   export type TokenUsageLogAvgAggregateInputType = {
-    inputTokens?: true
-    outputTokens?: true
-    totalTokens?: true
+    input_tokens?: true
+    output_tokens?: true
+    total_tokens?: true
     cost?: true
   }
 
   export type TokenUsageLogSumAggregateInputType = {
-    inputTokens?: true
-    outputTokens?: true
-    totalTokens?: true
+    input_tokens?: true
+    output_tokens?: true
+    total_tokens?: true
     cost?: true
   }
 
   export type TokenUsageLogMinAggregateInputType = {
     id?: true
-    userId?: true
-    inputTokens?: true
-    outputTokens?: true
-    totalTokens?: true
-    modelName?: true
+    user_id?: true
+    input_tokens?: true
+    output_tokens?: true
+    total_tokens?: true
+    model_name?: true
     cost?: true
-    conversationId?: true
-    createdAt?: true
+    conversation_id?: true
+    created_at?: true
   }
 
   export type TokenUsageLogMaxAggregateInputType = {
     id?: true
-    userId?: true
-    inputTokens?: true
-    outputTokens?: true
-    totalTokens?: true
-    modelName?: true
+    user_id?: true
+    input_tokens?: true
+    output_tokens?: true
+    total_tokens?: true
+    model_name?: true
     cost?: true
-    conversationId?: true
-    createdAt?: true
+    conversation_id?: true
+    created_at?: true
   }
 
   export type TokenUsageLogCountAggregateInputType = {
     id?: true
-    userId?: true
-    inputTokens?: true
-    outputTokens?: true
-    totalTokens?: true
-    modelName?: true
+    user_id?: true
+    input_tokens?: true
+    output_tokens?: true
+    total_tokens?: true
+    model_name?: true
     cost?: true
-    conversationId?: true
-    createdAt?: true
+    conversation_id?: true
+    created_at?: true
     _all?: true
   }
 
@@ -2751,14 +2851,14 @@ export namespace Prisma {
 
   export type TokenUsageLogGroupByOutputType = {
     id: string
-    userId: string
-    inputTokens: number
-    outputTokens: number
-    totalTokens: number
-    modelName: string
+    user_id: string
+    input_tokens: number
+    output_tokens: number
+    total_tokens: number
+    model_name: string
     cost: number
-    conversationId: string | null
-    createdAt: Date
+    conversation_id: string | null
+    created_at: Date
     _count: TokenUsageLogCountAggregateOutputType | null
     _avg: TokenUsageLogAvgAggregateOutputType | null
     _sum: TokenUsageLogSumAggregateOutputType | null
@@ -2782,56 +2882,56 @@ export namespace Prisma {
 
   export type TokenUsageLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    userId?: boolean
-    inputTokens?: boolean
-    outputTokens?: boolean
-    totalTokens?: boolean
-    modelName?: boolean
+    user_id?: boolean
+    input_tokens?: boolean
+    output_tokens?: boolean
+    total_tokens?: boolean
+    model_name?: boolean
     cost?: boolean
-    conversationId?: boolean
-    createdAt?: boolean
+    conversation_id?: boolean
+    created_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tokenUsageLog"]>
 
   export type TokenUsageLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    userId?: boolean
-    inputTokens?: boolean
-    outputTokens?: boolean
-    totalTokens?: boolean
-    modelName?: boolean
+    user_id?: boolean
+    input_tokens?: boolean
+    output_tokens?: boolean
+    total_tokens?: boolean
+    model_name?: boolean
     cost?: boolean
-    conversationId?: boolean
-    createdAt?: boolean
+    conversation_id?: boolean
+    created_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tokenUsageLog"]>
 
   export type TokenUsageLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    userId?: boolean
-    inputTokens?: boolean
-    outputTokens?: boolean
-    totalTokens?: boolean
-    modelName?: boolean
+    user_id?: boolean
+    input_tokens?: boolean
+    output_tokens?: boolean
+    total_tokens?: boolean
+    model_name?: boolean
     cost?: boolean
-    conversationId?: boolean
-    createdAt?: boolean
+    conversation_id?: boolean
+    created_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tokenUsageLog"]>
 
   export type TokenUsageLogSelectScalar = {
     id?: boolean
-    userId?: boolean
-    inputTokens?: boolean
-    outputTokens?: boolean
-    totalTokens?: boolean
-    modelName?: boolean
+    user_id?: boolean
+    input_tokens?: boolean
+    output_tokens?: boolean
+    total_tokens?: boolean
+    model_name?: boolean
     cost?: boolean
-    conversationId?: boolean
-    createdAt?: boolean
+    conversation_id?: boolean
+    created_at?: boolean
   }
 
-  export type TokenUsageLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "inputTokens" | "outputTokens" | "totalTokens" | "modelName" | "cost" | "conversationId" | "createdAt", ExtArgs["result"]["tokenUsageLog"]>
+  export type TokenUsageLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "input_tokens" | "output_tokens" | "total_tokens" | "model_name" | "cost" | "conversation_id" | "created_at", ExtArgs["result"]["tokenUsageLog"]>
   export type TokenUsageLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -2849,14 +2949,14 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      userId: string
-      inputTokens: number
-      outputTokens: number
-      totalTokens: number
-      modelName: string
+      user_id: string
+      input_tokens: number
+      output_tokens: number
+      total_tokens: number
+      model_name: string
       cost: number
-      conversationId: string | null
-      createdAt: Date
+      conversation_id: string | null
+      created_at: Date
     }, ExtArgs["result"]["tokenUsageLog"]>
     composites: {}
   }
@@ -3282,14 +3382,14 @@ export namespace Prisma {
    */
   interface TokenUsageLogFieldRefs {
     readonly id: FieldRef<"TokenUsageLog", 'String'>
-    readonly userId: FieldRef<"TokenUsageLog", 'String'>
-    readonly inputTokens: FieldRef<"TokenUsageLog", 'Int'>
-    readonly outputTokens: FieldRef<"TokenUsageLog", 'Int'>
-    readonly totalTokens: FieldRef<"TokenUsageLog", 'Int'>
-    readonly modelName: FieldRef<"TokenUsageLog", 'String'>
+    readonly user_id: FieldRef<"TokenUsageLog", 'String'>
+    readonly input_tokens: FieldRef<"TokenUsageLog", 'Int'>
+    readonly output_tokens: FieldRef<"TokenUsageLog", 'Int'>
+    readonly total_tokens: FieldRef<"TokenUsageLog", 'Int'>
+    readonly model_name: FieldRef<"TokenUsageLog", 'String'>
     readonly cost: FieldRef<"TokenUsageLog", 'Float'>
-    readonly conversationId: FieldRef<"TokenUsageLog", 'String'>
-    readonly createdAt: FieldRef<"TokenUsageLog", 'DateTime'>
+    readonly conversation_id: FieldRef<"TokenUsageLog", 'String'>
+    readonly created_at: FieldRef<"TokenUsageLog", 'DateTime'>
   }
     
 
@@ -3716,52 +3816,52 @@ export namespace Prisma {
 
   export type ConversationMinAggregateOutputType = {
     id: string | null
-    userId: string | null
+    user_id: string | null
     title: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
+    created_at: Date | null
+    updated_at: Date | null
   }
 
   export type ConversationMaxAggregateOutputType = {
     id: string | null
-    userId: string | null
+    user_id: string | null
     title: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
+    created_at: Date | null
+    updated_at: Date | null
   }
 
   export type ConversationCountAggregateOutputType = {
     id: number
-    userId: number
+    user_id: number
     title: number
-    createdAt: number
-    updatedAt: number
+    created_at: number
+    updated_at: number
     _all: number
   }
 
 
   export type ConversationMinAggregateInputType = {
     id?: true
-    userId?: true
+    user_id?: true
     title?: true
-    createdAt?: true
-    updatedAt?: true
+    created_at?: true
+    updated_at?: true
   }
 
   export type ConversationMaxAggregateInputType = {
     id?: true
-    userId?: true
+    user_id?: true
     title?: true
-    createdAt?: true
-    updatedAt?: true
+    created_at?: true
+    updated_at?: true
   }
 
   export type ConversationCountAggregateInputType = {
     id?: true
-    userId?: true
+    user_id?: true
     title?: true
-    createdAt?: true
-    updatedAt?: true
+    created_at?: true
+    updated_at?: true
     _all?: true
   }
 
@@ -3839,10 +3939,10 @@ export namespace Prisma {
 
   export type ConversationGroupByOutputType = {
     id: string
-    userId: string
+    user_id: string
     title: string
-    createdAt: Date
-    updatedAt: Date
+    created_at: Date
+    updated_at: Date
     _count: ConversationCountAggregateOutputType | null
     _min: ConversationMinAggregateOutputType | null
     _max: ConversationMaxAggregateOutputType | null
@@ -3864,45 +3964,47 @@ export namespace Prisma {
 
   export type ConversationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    userId?: boolean
+    user_id?: boolean
     title?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
+    created_at?: boolean
+    updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     messages?: boolean | Conversation$messagesArgs<ExtArgs>
+    shared_conversations?: boolean | Conversation$shared_conversationsArgs<ExtArgs>
     _count?: boolean | ConversationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversation"]>
 
   export type ConversationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    userId?: boolean
+    user_id?: boolean
     title?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
+    created_at?: boolean
+    updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversation"]>
 
   export type ConversationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    userId?: boolean
+    user_id?: boolean
     title?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
+    created_at?: boolean
+    updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversation"]>
 
   export type ConversationSelectScalar = {
     id?: boolean
-    userId?: boolean
+    user_id?: boolean
     title?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
+    created_at?: boolean
+    updated_at?: boolean
   }
 
-  export type ConversationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "title" | "createdAt" | "updatedAt", ExtArgs["result"]["conversation"]>
+  export type ConversationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "title" | "created_at" | "updated_at", ExtArgs["result"]["conversation"]>
   export type ConversationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     messages?: boolean | Conversation$messagesArgs<ExtArgs>
+    shared_conversations?: boolean | Conversation$shared_conversationsArgs<ExtArgs>
     _count?: boolean | ConversationCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ConversationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3917,13 +4019,14 @@ export namespace Prisma {
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
       messages: Prisma.$MessagePayload<ExtArgs>[]
+      shared_conversations: Prisma.$SharedConversationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      userId: string
+      user_id: string
       title: string
-      createdAt: Date
-      updatedAt: Date
+      created_at: Date
+      updated_at: Date
     }, ExtArgs["result"]["conversation"]>
     composites: {}
   }
@@ -4320,6 +4423,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     messages<T extends Conversation$messagesArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    shared_conversations<T extends Conversation$shared_conversationsArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$shared_conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SharedConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4350,10 +4454,10 @@ export namespace Prisma {
    */
   interface ConversationFieldRefs {
     readonly id: FieldRef<"Conversation", 'String'>
-    readonly userId: FieldRef<"Conversation", 'String'>
+    readonly user_id: FieldRef<"Conversation", 'String'>
     readonly title: FieldRef<"Conversation", 'String'>
-    readonly createdAt: FieldRef<"Conversation", 'DateTime'>
-    readonly updatedAt: FieldRef<"Conversation", 'DateTime'>
+    readonly created_at: FieldRef<"Conversation", 'DateTime'>
+    readonly updated_at: FieldRef<"Conversation", 'DateTime'>
   }
     
 
@@ -4774,6 +4878,30 @@ export namespace Prisma {
   }
 
   /**
+   * Conversation.shared_conversations
+   */
+  export type Conversation$shared_conversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SharedConversation
+     */
+    select?: SharedConversationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SharedConversation
+     */
+    omit?: SharedConversationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SharedConversationInclude<ExtArgs> | null
+    where?: SharedConversationWhereInput
+    orderBy?: SharedConversationOrderByWithRelationInput | SharedConversationOrderByWithRelationInput[]
+    cursor?: SharedConversationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SharedConversationScalarFieldEnum | SharedConversationScalarFieldEnum[]
+  }
+
+  /**
    * Conversation without action
    */
   export type ConversationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4804,52 +4932,52 @@ export namespace Prisma {
 
   export type MessageMinAggregateOutputType = {
     id: string | null
-    conversationId: string | null
+    conversation_id: string | null
     role: string | null
     content: string | null
-    createdAt: Date | null
+    created_at: Date | null
   }
 
   export type MessageMaxAggregateOutputType = {
     id: string | null
-    conversationId: string | null
+    conversation_id: string | null
     role: string | null
     content: string | null
-    createdAt: Date | null
+    created_at: Date | null
   }
 
   export type MessageCountAggregateOutputType = {
     id: number
-    conversationId: number
+    conversation_id: number
     role: number
     content: number
-    createdAt: number
+    created_at: number
     _all: number
   }
 
 
   export type MessageMinAggregateInputType = {
     id?: true
-    conversationId?: true
+    conversation_id?: true
     role?: true
     content?: true
-    createdAt?: true
+    created_at?: true
   }
 
   export type MessageMaxAggregateInputType = {
     id?: true
-    conversationId?: true
+    conversation_id?: true
     role?: true
     content?: true
-    createdAt?: true
+    created_at?: true
   }
 
   export type MessageCountAggregateInputType = {
     id?: true
-    conversationId?: true
+    conversation_id?: true
     role?: true
     content?: true
-    createdAt?: true
+    created_at?: true
     _all?: true
   }
 
@@ -4927,10 +5055,10 @@ export namespace Prisma {
 
   export type MessageGroupByOutputType = {
     id: string
-    conversationId: string
+    conversation_id: string
     role: string
     content: string
-    createdAt: Date
+    created_at: Date
     _count: MessageCountAggregateOutputType | null
     _min: MessageMinAggregateOutputType | null
     _max: MessageMaxAggregateOutputType | null
@@ -4952,10 +5080,10 @@ export namespace Prisma {
 
   export type MessageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    conversationId?: boolean
+    conversation_id?: boolean
     role?: boolean
     content?: boolean
-    createdAt?: boolean
+    created_at?: boolean
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     images?: boolean | Message$imagesArgs<ExtArgs>
     _count?: boolean | MessageCountOutputTypeDefaultArgs<ExtArgs>
@@ -4963,31 +5091,31 @@ export namespace Prisma {
 
   export type MessageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    conversationId?: boolean
+    conversation_id?: boolean
     role?: boolean
     content?: boolean
-    createdAt?: boolean
+    created_at?: boolean
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["message"]>
 
   export type MessageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    conversationId?: boolean
+    conversation_id?: boolean
     role?: boolean
     content?: boolean
-    createdAt?: boolean
+    created_at?: boolean
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["message"]>
 
   export type MessageSelectScalar = {
     id?: boolean
-    conversationId?: boolean
+    conversation_id?: boolean
     role?: boolean
     content?: boolean
-    createdAt?: boolean
+    created_at?: boolean
   }
 
-  export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "role" | "content" | "createdAt", ExtArgs["result"]["message"]>
+  export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversation_id" | "role" | "content" | "created_at", ExtArgs["result"]["message"]>
   export type MessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     images?: boolean | Message$imagesArgs<ExtArgs>
@@ -5008,10 +5136,10 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      conversationId: string
+      conversation_id: string
       role: string
       content: string
-      createdAt: Date
+      created_at: Date
     }, ExtArgs["result"]["message"]>
     composites: {}
   }
@@ -5438,10 +5566,10 @@ export namespace Prisma {
    */
   interface MessageFieldRefs {
     readonly id: FieldRef<"Message", 'String'>
-    readonly conversationId: FieldRef<"Message", 'String'>
+    readonly conversation_id: FieldRef<"Message", 'String'>
     readonly role: FieldRef<"Message", 'String'>
     readonly content: FieldRef<"Message", 'String'>
-    readonly createdAt: FieldRef<"Message", 'DateTime'>
+    readonly created_at: FieldRef<"Message", 'DateTime'>
   }
     
 
@@ -5902,38 +6030,38 @@ export namespace Prisma {
 
   export type MessageImageMinAggregateOutputType = {
     id: string | null
-    messageId: string | null
+    message_id: string | null
     filename: string | null
-    originalName: string | null
-    mimeType: string | null
+    original_name: string | null
+    mime_type: string | null
     size: number | null
-    base64Data: string | null
+    base64_data: string | null
     url: string | null
-    createdAt: Date | null
+    created_at: Date | null
   }
 
   export type MessageImageMaxAggregateOutputType = {
     id: string | null
-    messageId: string | null
+    message_id: string | null
     filename: string | null
-    originalName: string | null
-    mimeType: string | null
+    original_name: string | null
+    mime_type: string | null
     size: number | null
-    base64Data: string | null
+    base64_data: string | null
     url: string | null
-    createdAt: Date | null
+    created_at: Date | null
   }
 
   export type MessageImageCountAggregateOutputType = {
     id: number
-    messageId: number
+    message_id: number
     filename: number
-    originalName: number
-    mimeType: number
+    original_name: number
+    mime_type: number
     size: number
-    base64Data: number
+    base64_data: number
     url: number
-    createdAt: number
+    created_at: number
     _all: number
   }
 
@@ -5948,38 +6076,38 @@ export namespace Prisma {
 
   export type MessageImageMinAggregateInputType = {
     id?: true
-    messageId?: true
+    message_id?: true
     filename?: true
-    originalName?: true
-    mimeType?: true
+    original_name?: true
+    mime_type?: true
     size?: true
-    base64Data?: true
+    base64_data?: true
     url?: true
-    createdAt?: true
+    created_at?: true
   }
 
   export type MessageImageMaxAggregateInputType = {
     id?: true
-    messageId?: true
+    message_id?: true
     filename?: true
-    originalName?: true
-    mimeType?: true
+    original_name?: true
+    mime_type?: true
     size?: true
-    base64Data?: true
+    base64_data?: true
     url?: true
-    createdAt?: true
+    created_at?: true
   }
 
   export type MessageImageCountAggregateInputType = {
     id?: true
-    messageId?: true
+    message_id?: true
     filename?: true
-    originalName?: true
-    mimeType?: true
+    original_name?: true
+    mime_type?: true
     size?: true
-    base64Data?: true
+    base64_data?: true
     url?: true
-    createdAt?: true
+    created_at?: true
     _all?: true
   }
 
@@ -6071,14 +6199,14 @@ export namespace Prisma {
 
   export type MessageImageGroupByOutputType = {
     id: string
-    messageId: string
+    message_id: string
     filename: string
-    originalName: string | null
-    mimeType: string
+    original_name: string | null
+    mime_type: string
     size: number
-    base64Data: string
+    base64_data: string
     url: string | null
-    createdAt: Date
+    created_at: Date
     _count: MessageImageCountAggregateOutputType | null
     _avg: MessageImageAvgAggregateOutputType | null
     _sum: MessageImageSumAggregateOutputType | null
@@ -6102,56 +6230,56 @@ export namespace Prisma {
 
   export type MessageImageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    messageId?: boolean
+    message_id?: boolean
     filename?: boolean
-    originalName?: boolean
-    mimeType?: boolean
+    original_name?: boolean
+    mime_type?: boolean
     size?: boolean
-    base64Data?: boolean
+    base64_data?: boolean
     url?: boolean
-    createdAt?: boolean
+    created_at?: boolean
     message?: boolean | MessageDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["messageImage"]>
 
   export type MessageImageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    messageId?: boolean
+    message_id?: boolean
     filename?: boolean
-    originalName?: boolean
-    mimeType?: boolean
+    original_name?: boolean
+    mime_type?: boolean
     size?: boolean
-    base64Data?: boolean
+    base64_data?: boolean
     url?: boolean
-    createdAt?: boolean
+    created_at?: boolean
     message?: boolean | MessageDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["messageImage"]>
 
   export type MessageImageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    messageId?: boolean
+    message_id?: boolean
     filename?: boolean
-    originalName?: boolean
-    mimeType?: boolean
+    original_name?: boolean
+    mime_type?: boolean
     size?: boolean
-    base64Data?: boolean
+    base64_data?: boolean
     url?: boolean
-    createdAt?: boolean
+    created_at?: boolean
     message?: boolean | MessageDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["messageImage"]>
 
   export type MessageImageSelectScalar = {
     id?: boolean
-    messageId?: boolean
+    message_id?: boolean
     filename?: boolean
-    originalName?: boolean
-    mimeType?: boolean
+    original_name?: boolean
+    mime_type?: boolean
     size?: boolean
-    base64Data?: boolean
+    base64_data?: boolean
     url?: boolean
-    createdAt?: boolean
+    created_at?: boolean
   }
 
-  export type MessageImageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "filename" | "originalName" | "mimeType" | "size" | "base64Data" | "url" | "createdAt", ExtArgs["result"]["messageImage"]>
+  export type MessageImageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "message_id" | "filename" | "original_name" | "mime_type" | "size" | "base64_data" | "url" | "created_at", ExtArgs["result"]["messageImage"]>
   export type MessageImageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     message?: boolean | MessageDefaultArgs<ExtArgs>
   }
@@ -6169,14 +6297,14 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      messageId: string
+      message_id: string
       filename: string
-      originalName: string | null
-      mimeType: string
+      original_name: string | null
+      mime_type: string
       size: number
-      base64Data: string
+      base64_data: string
       url: string | null
-      createdAt: Date
+      created_at: Date
     }, ExtArgs["result"]["messageImage"]>
     composites: {}
   }
@@ -6602,14 +6730,14 @@ export namespace Prisma {
    */
   interface MessageImageFieldRefs {
     readonly id: FieldRef<"MessageImage", 'String'>
-    readonly messageId: FieldRef<"MessageImage", 'String'>
+    readonly message_id: FieldRef<"MessageImage", 'String'>
     readonly filename: FieldRef<"MessageImage", 'String'>
-    readonly originalName: FieldRef<"MessageImage", 'String'>
-    readonly mimeType: FieldRef<"MessageImage", 'String'>
+    readonly original_name: FieldRef<"MessageImage", 'String'>
+    readonly mime_type: FieldRef<"MessageImage", 'String'>
     readonly size: FieldRef<"MessageImage", 'Int'>
-    readonly base64Data: FieldRef<"MessageImage", 'String'>
+    readonly base64_data: FieldRef<"MessageImage", 'String'>
     readonly url: FieldRef<"MessageImage", 'String'>
-    readonly createdAt: FieldRef<"MessageImage", 'DateTime'>
+    readonly created_at: FieldRef<"MessageImage", 'DateTime'>
   }
     
 
@@ -7025,6 +7153,1150 @@ export namespace Prisma {
 
 
   /**
+   * Model SharedConversation
+   */
+
+  export type AggregateSharedConversation = {
+    _count: SharedConversationCountAggregateOutputType | null
+    _avg: SharedConversationAvgAggregateOutputType | null
+    _sum: SharedConversationSumAggregateOutputType | null
+    _min: SharedConversationMinAggregateOutputType | null
+    _max: SharedConversationMaxAggregateOutputType | null
+  }
+
+  export type SharedConversationAvgAggregateOutputType = {
+    view_count: number | null
+  }
+
+  export type SharedConversationSumAggregateOutputType = {
+    view_count: number | null
+  }
+
+  export type SharedConversationMinAggregateOutputType = {
+    id: string | null
+    conversation_id: string | null
+    share_id: string | null
+    title: string | null
+    is_public: boolean | null
+    expires_at: Date | null
+    view_count: number | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type SharedConversationMaxAggregateOutputType = {
+    id: string | null
+    conversation_id: string | null
+    share_id: string | null
+    title: string | null
+    is_public: boolean | null
+    expires_at: Date | null
+    view_count: number | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type SharedConversationCountAggregateOutputType = {
+    id: number
+    conversation_id: number
+    share_id: number
+    title: number
+    is_public: number
+    expires_at: number
+    view_count: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type SharedConversationAvgAggregateInputType = {
+    view_count?: true
+  }
+
+  export type SharedConversationSumAggregateInputType = {
+    view_count?: true
+  }
+
+  export type SharedConversationMinAggregateInputType = {
+    id?: true
+    conversation_id?: true
+    share_id?: true
+    title?: true
+    is_public?: true
+    expires_at?: true
+    view_count?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type SharedConversationMaxAggregateInputType = {
+    id?: true
+    conversation_id?: true
+    share_id?: true
+    title?: true
+    is_public?: true
+    expires_at?: true
+    view_count?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type SharedConversationCountAggregateInputType = {
+    id?: true
+    conversation_id?: true
+    share_id?: true
+    title?: true
+    is_public?: true
+    expires_at?: true
+    view_count?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type SharedConversationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SharedConversation to aggregate.
+     */
+    where?: SharedConversationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SharedConversations to fetch.
+     */
+    orderBy?: SharedConversationOrderByWithRelationInput | SharedConversationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: SharedConversationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SharedConversations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SharedConversations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned SharedConversations
+    **/
+    _count?: true | SharedConversationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: SharedConversationAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: SharedConversationSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: SharedConversationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: SharedConversationMaxAggregateInputType
+  }
+
+  export type GetSharedConversationAggregateType<T extends SharedConversationAggregateArgs> = {
+        [P in keyof T & keyof AggregateSharedConversation]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSharedConversation[P]>
+      : GetScalarType<T[P], AggregateSharedConversation[P]>
+  }
+
+
+
+
+  export type SharedConversationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SharedConversationWhereInput
+    orderBy?: SharedConversationOrderByWithAggregationInput | SharedConversationOrderByWithAggregationInput[]
+    by: SharedConversationScalarFieldEnum[] | SharedConversationScalarFieldEnum
+    having?: SharedConversationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SharedConversationCountAggregateInputType | true
+    _avg?: SharedConversationAvgAggregateInputType
+    _sum?: SharedConversationSumAggregateInputType
+    _min?: SharedConversationMinAggregateInputType
+    _max?: SharedConversationMaxAggregateInputType
+  }
+
+  export type SharedConversationGroupByOutputType = {
+    id: string
+    conversation_id: string
+    share_id: string
+    title: string
+    is_public: boolean
+    expires_at: Date | null
+    view_count: number
+    created_at: Date
+    updated_at: Date
+    _count: SharedConversationCountAggregateOutputType | null
+    _avg: SharedConversationAvgAggregateOutputType | null
+    _sum: SharedConversationSumAggregateOutputType | null
+    _min: SharedConversationMinAggregateOutputType | null
+    _max: SharedConversationMaxAggregateOutputType | null
+  }
+
+  type GetSharedConversationGroupByPayload<T extends SharedConversationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SharedConversationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SharedConversationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SharedConversationGroupByOutputType[P]>
+            : GetScalarType<T[P], SharedConversationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SharedConversationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    conversation_id?: boolean
+    share_id?: boolean
+    title?: boolean
+    is_public?: boolean
+    expires_at?: boolean
+    view_count?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["sharedConversation"]>
+
+  export type SharedConversationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    conversation_id?: boolean
+    share_id?: boolean
+    title?: boolean
+    is_public?: boolean
+    expires_at?: boolean
+    view_count?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["sharedConversation"]>
+
+  export type SharedConversationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    conversation_id?: boolean
+    share_id?: boolean
+    title?: boolean
+    is_public?: boolean
+    expires_at?: boolean
+    view_count?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["sharedConversation"]>
+
+  export type SharedConversationSelectScalar = {
+    id?: boolean
+    conversation_id?: boolean
+    share_id?: boolean
+    title?: boolean
+    is_public?: boolean
+    expires_at?: boolean
+    view_count?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type SharedConversationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversation_id" | "share_id" | "title" | "is_public" | "expires_at" | "view_count" | "created_at" | "updated_at", ExtArgs["result"]["sharedConversation"]>
+  export type SharedConversationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
+  }
+  export type SharedConversationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
+  }
+  export type SharedConversationIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
+  }
+
+  export type $SharedConversationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SharedConversation"
+    objects: {
+      conversation: Prisma.$ConversationPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      conversation_id: string
+      share_id: string
+      title: string
+      is_public: boolean
+      expires_at: Date | null
+      view_count: number
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["sharedConversation"]>
+    composites: {}
+  }
+
+  type SharedConversationGetPayload<S extends boolean | null | undefined | SharedConversationDefaultArgs> = $Result.GetResult<Prisma.$SharedConversationPayload, S>
+
+  type SharedConversationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<SharedConversationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: SharedConversationCountAggregateInputType | true
+    }
+
+  export interface SharedConversationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SharedConversation'], meta: { name: 'SharedConversation' } }
+    /**
+     * Find zero or one SharedConversation that matches the filter.
+     * @param {SharedConversationFindUniqueArgs} args - Arguments to find a SharedConversation
+     * @example
+     * // Get one SharedConversation
+     * const sharedConversation = await prisma.sharedConversation.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SharedConversationFindUniqueArgs>(args: SelectSubset<T, SharedConversationFindUniqueArgs<ExtArgs>>): Prisma__SharedConversationClient<$Result.GetResult<Prisma.$SharedConversationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one SharedConversation that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {SharedConversationFindUniqueOrThrowArgs} args - Arguments to find a SharedConversation
+     * @example
+     * // Get one SharedConversation
+     * const sharedConversation = await prisma.sharedConversation.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SharedConversationFindUniqueOrThrowArgs>(args: SelectSubset<T, SharedConversationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SharedConversationClient<$Result.GetResult<Prisma.$SharedConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SharedConversation that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SharedConversationFindFirstArgs} args - Arguments to find a SharedConversation
+     * @example
+     * // Get one SharedConversation
+     * const sharedConversation = await prisma.sharedConversation.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SharedConversationFindFirstArgs>(args?: SelectSubset<T, SharedConversationFindFirstArgs<ExtArgs>>): Prisma__SharedConversationClient<$Result.GetResult<Prisma.$SharedConversationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SharedConversation that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SharedConversationFindFirstOrThrowArgs} args - Arguments to find a SharedConversation
+     * @example
+     * // Get one SharedConversation
+     * const sharedConversation = await prisma.sharedConversation.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SharedConversationFindFirstOrThrowArgs>(args?: SelectSubset<T, SharedConversationFindFirstOrThrowArgs<ExtArgs>>): Prisma__SharedConversationClient<$Result.GetResult<Prisma.$SharedConversationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more SharedConversations that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SharedConversationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all SharedConversations
+     * const sharedConversations = await prisma.sharedConversation.findMany()
+     * 
+     * // Get first 10 SharedConversations
+     * const sharedConversations = await prisma.sharedConversation.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const sharedConversationWithIdOnly = await prisma.sharedConversation.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends SharedConversationFindManyArgs>(args?: SelectSubset<T, SharedConversationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SharedConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a SharedConversation.
+     * @param {SharedConversationCreateArgs} args - Arguments to create a SharedConversation.
+     * @example
+     * // Create one SharedConversation
+     * const SharedConversation = await prisma.sharedConversation.create({
+     *   data: {
+     *     // ... data to create a SharedConversation
+     *   }
+     * })
+     * 
+     */
+    create<T extends SharedConversationCreateArgs>(args: SelectSubset<T, SharedConversationCreateArgs<ExtArgs>>): Prisma__SharedConversationClient<$Result.GetResult<Prisma.$SharedConversationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many SharedConversations.
+     * @param {SharedConversationCreateManyArgs} args - Arguments to create many SharedConversations.
+     * @example
+     * // Create many SharedConversations
+     * const sharedConversation = await prisma.sharedConversation.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends SharedConversationCreateManyArgs>(args?: SelectSubset<T, SharedConversationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many SharedConversations and returns the data saved in the database.
+     * @param {SharedConversationCreateManyAndReturnArgs} args - Arguments to create many SharedConversations.
+     * @example
+     * // Create many SharedConversations
+     * const sharedConversation = await prisma.sharedConversation.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many SharedConversations and only return the `id`
+     * const sharedConversationWithIdOnly = await prisma.sharedConversation.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends SharedConversationCreateManyAndReturnArgs>(args?: SelectSubset<T, SharedConversationCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SharedConversationPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a SharedConversation.
+     * @param {SharedConversationDeleteArgs} args - Arguments to delete one SharedConversation.
+     * @example
+     * // Delete one SharedConversation
+     * const SharedConversation = await prisma.sharedConversation.delete({
+     *   where: {
+     *     // ... filter to delete one SharedConversation
+     *   }
+     * })
+     * 
+     */
+    delete<T extends SharedConversationDeleteArgs>(args: SelectSubset<T, SharedConversationDeleteArgs<ExtArgs>>): Prisma__SharedConversationClient<$Result.GetResult<Prisma.$SharedConversationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one SharedConversation.
+     * @param {SharedConversationUpdateArgs} args - Arguments to update one SharedConversation.
+     * @example
+     * // Update one SharedConversation
+     * const sharedConversation = await prisma.sharedConversation.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends SharedConversationUpdateArgs>(args: SelectSubset<T, SharedConversationUpdateArgs<ExtArgs>>): Prisma__SharedConversationClient<$Result.GetResult<Prisma.$SharedConversationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more SharedConversations.
+     * @param {SharedConversationDeleteManyArgs} args - Arguments to filter SharedConversations to delete.
+     * @example
+     * // Delete a few SharedConversations
+     * const { count } = await prisma.sharedConversation.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends SharedConversationDeleteManyArgs>(args?: SelectSubset<T, SharedConversationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SharedConversations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SharedConversationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many SharedConversations
+     * const sharedConversation = await prisma.sharedConversation.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends SharedConversationUpdateManyArgs>(args: SelectSubset<T, SharedConversationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SharedConversations and returns the data updated in the database.
+     * @param {SharedConversationUpdateManyAndReturnArgs} args - Arguments to update many SharedConversations.
+     * @example
+     * // Update many SharedConversations
+     * const sharedConversation = await prisma.sharedConversation.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more SharedConversations and only return the `id`
+     * const sharedConversationWithIdOnly = await prisma.sharedConversation.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends SharedConversationUpdateManyAndReturnArgs>(args: SelectSubset<T, SharedConversationUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SharedConversationPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one SharedConversation.
+     * @param {SharedConversationUpsertArgs} args - Arguments to update or create a SharedConversation.
+     * @example
+     * // Update or create a SharedConversation
+     * const sharedConversation = await prisma.sharedConversation.upsert({
+     *   create: {
+     *     // ... data to create a SharedConversation
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the SharedConversation we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SharedConversationUpsertArgs>(args: SelectSubset<T, SharedConversationUpsertArgs<ExtArgs>>): Prisma__SharedConversationClient<$Result.GetResult<Prisma.$SharedConversationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of SharedConversations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SharedConversationCountArgs} args - Arguments to filter SharedConversations to count.
+     * @example
+     * // Count the number of SharedConversations
+     * const count = await prisma.sharedConversation.count({
+     *   where: {
+     *     // ... the filter for the SharedConversations we want to count
+     *   }
+     * })
+    **/
+    count<T extends SharedConversationCountArgs>(
+      args?: Subset<T, SharedConversationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SharedConversationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a SharedConversation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SharedConversationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SharedConversationAggregateArgs>(args: Subset<T, SharedConversationAggregateArgs>): Prisma.PrismaPromise<GetSharedConversationAggregateType<T>>
+
+    /**
+     * Group by SharedConversation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SharedConversationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends SharedConversationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SharedConversationGroupByArgs['orderBy'] }
+        : { orderBy?: SharedConversationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SharedConversationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSharedConversationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the SharedConversation model
+   */
+  readonly fields: SharedConversationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for SharedConversation.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SharedConversationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the SharedConversation model
+   */
+  interface SharedConversationFieldRefs {
+    readonly id: FieldRef<"SharedConversation", 'String'>
+    readonly conversation_id: FieldRef<"SharedConversation", 'String'>
+    readonly share_id: FieldRef<"SharedConversation", 'String'>
+    readonly title: FieldRef<"SharedConversation", 'String'>
+    readonly is_public: FieldRef<"SharedConversation", 'Boolean'>
+    readonly expires_at: FieldRef<"SharedConversation", 'DateTime'>
+    readonly view_count: FieldRef<"SharedConversation", 'Int'>
+    readonly created_at: FieldRef<"SharedConversation", 'DateTime'>
+    readonly updated_at: FieldRef<"SharedConversation", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * SharedConversation findUnique
+   */
+  export type SharedConversationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SharedConversation
+     */
+    select?: SharedConversationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SharedConversation
+     */
+    omit?: SharedConversationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SharedConversationInclude<ExtArgs> | null
+    /**
+     * Filter, which SharedConversation to fetch.
+     */
+    where: SharedConversationWhereUniqueInput
+  }
+
+  /**
+   * SharedConversation findUniqueOrThrow
+   */
+  export type SharedConversationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SharedConversation
+     */
+    select?: SharedConversationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SharedConversation
+     */
+    omit?: SharedConversationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SharedConversationInclude<ExtArgs> | null
+    /**
+     * Filter, which SharedConversation to fetch.
+     */
+    where: SharedConversationWhereUniqueInput
+  }
+
+  /**
+   * SharedConversation findFirst
+   */
+  export type SharedConversationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SharedConversation
+     */
+    select?: SharedConversationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SharedConversation
+     */
+    omit?: SharedConversationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SharedConversationInclude<ExtArgs> | null
+    /**
+     * Filter, which SharedConversation to fetch.
+     */
+    where?: SharedConversationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SharedConversations to fetch.
+     */
+    orderBy?: SharedConversationOrderByWithRelationInput | SharedConversationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SharedConversations.
+     */
+    cursor?: SharedConversationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SharedConversations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SharedConversations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SharedConversations.
+     */
+    distinct?: SharedConversationScalarFieldEnum | SharedConversationScalarFieldEnum[]
+  }
+
+  /**
+   * SharedConversation findFirstOrThrow
+   */
+  export type SharedConversationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SharedConversation
+     */
+    select?: SharedConversationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SharedConversation
+     */
+    omit?: SharedConversationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SharedConversationInclude<ExtArgs> | null
+    /**
+     * Filter, which SharedConversation to fetch.
+     */
+    where?: SharedConversationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SharedConversations to fetch.
+     */
+    orderBy?: SharedConversationOrderByWithRelationInput | SharedConversationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SharedConversations.
+     */
+    cursor?: SharedConversationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SharedConversations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SharedConversations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SharedConversations.
+     */
+    distinct?: SharedConversationScalarFieldEnum | SharedConversationScalarFieldEnum[]
+  }
+
+  /**
+   * SharedConversation findMany
+   */
+  export type SharedConversationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SharedConversation
+     */
+    select?: SharedConversationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SharedConversation
+     */
+    omit?: SharedConversationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SharedConversationInclude<ExtArgs> | null
+    /**
+     * Filter, which SharedConversations to fetch.
+     */
+    where?: SharedConversationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SharedConversations to fetch.
+     */
+    orderBy?: SharedConversationOrderByWithRelationInput | SharedConversationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing SharedConversations.
+     */
+    cursor?: SharedConversationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SharedConversations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SharedConversations.
+     */
+    skip?: number
+    distinct?: SharedConversationScalarFieldEnum | SharedConversationScalarFieldEnum[]
+  }
+
+  /**
+   * SharedConversation create
+   */
+  export type SharedConversationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SharedConversation
+     */
+    select?: SharedConversationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SharedConversation
+     */
+    omit?: SharedConversationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SharedConversationInclude<ExtArgs> | null
+    /**
+     * The data needed to create a SharedConversation.
+     */
+    data: XOR<SharedConversationCreateInput, SharedConversationUncheckedCreateInput>
+  }
+
+  /**
+   * SharedConversation createMany
+   */
+  export type SharedConversationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many SharedConversations.
+     */
+    data: SharedConversationCreateManyInput | SharedConversationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * SharedConversation createManyAndReturn
+   */
+  export type SharedConversationCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SharedConversation
+     */
+    select?: SharedConversationSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the SharedConversation
+     */
+    omit?: SharedConversationOmit<ExtArgs> | null
+    /**
+     * The data used to create many SharedConversations.
+     */
+    data: SharedConversationCreateManyInput | SharedConversationCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SharedConversationIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * SharedConversation update
+   */
+  export type SharedConversationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SharedConversation
+     */
+    select?: SharedConversationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SharedConversation
+     */
+    omit?: SharedConversationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SharedConversationInclude<ExtArgs> | null
+    /**
+     * The data needed to update a SharedConversation.
+     */
+    data: XOR<SharedConversationUpdateInput, SharedConversationUncheckedUpdateInput>
+    /**
+     * Choose, which SharedConversation to update.
+     */
+    where: SharedConversationWhereUniqueInput
+  }
+
+  /**
+   * SharedConversation updateMany
+   */
+  export type SharedConversationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update SharedConversations.
+     */
+    data: XOR<SharedConversationUpdateManyMutationInput, SharedConversationUncheckedUpdateManyInput>
+    /**
+     * Filter which SharedConversations to update
+     */
+    where?: SharedConversationWhereInput
+    /**
+     * Limit how many SharedConversations to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * SharedConversation updateManyAndReturn
+   */
+  export type SharedConversationUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SharedConversation
+     */
+    select?: SharedConversationSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the SharedConversation
+     */
+    omit?: SharedConversationOmit<ExtArgs> | null
+    /**
+     * The data used to update SharedConversations.
+     */
+    data: XOR<SharedConversationUpdateManyMutationInput, SharedConversationUncheckedUpdateManyInput>
+    /**
+     * Filter which SharedConversations to update
+     */
+    where?: SharedConversationWhereInput
+    /**
+     * Limit how many SharedConversations to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SharedConversationIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * SharedConversation upsert
+   */
+  export type SharedConversationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SharedConversation
+     */
+    select?: SharedConversationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SharedConversation
+     */
+    omit?: SharedConversationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SharedConversationInclude<ExtArgs> | null
+    /**
+     * The filter to search for the SharedConversation to update in case it exists.
+     */
+    where: SharedConversationWhereUniqueInput
+    /**
+     * In case the SharedConversation found by the `where` argument doesn't exist, create a new SharedConversation with this data.
+     */
+    create: XOR<SharedConversationCreateInput, SharedConversationUncheckedCreateInput>
+    /**
+     * In case the SharedConversation was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SharedConversationUpdateInput, SharedConversationUncheckedUpdateInput>
+  }
+
+  /**
+   * SharedConversation delete
+   */
+  export type SharedConversationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SharedConversation
+     */
+    select?: SharedConversationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SharedConversation
+     */
+    omit?: SharedConversationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SharedConversationInclude<ExtArgs> | null
+    /**
+     * Filter which SharedConversation to delete.
+     */
+    where: SharedConversationWhereUniqueInput
+  }
+
+  /**
+   * SharedConversation deleteMany
+   */
+  export type SharedConversationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SharedConversations to delete
+     */
+    where?: SharedConversationWhereInput
+    /**
+     * Limit how many SharedConversations to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * SharedConversation without action
+   */
+  export type SharedConversationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SharedConversation
+     */
+    select?: SharedConversationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SharedConversation
+     */
+    omit?: SharedConversationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SharedConversationInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -7043,13 +8315,13 @@ export namespace Prisma {
     email: 'email',
     password: 'password',
     name: 'name',
-    studentId: 'studentId',
-    tokenUsage: 'tokenUsage',
-    estimatedCost: 'estimatedCost',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
-    googleId: 'googleId',
-    profileImage: 'profileImage'
+    student_id: 'student_id',
+    token_usage: 'token_usage',
+    estimated_cost: 'estimated_cost',
+    created_at: 'created_at',
+    updated_at: 'updated_at',
+    google_id: 'google_id',
+    profile_image: 'profile_image'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -7057,14 +8329,14 @@ export namespace Prisma {
 
   export const TokenUsageLogScalarFieldEnum: {
     id: 'id',
-    userId: 'userId',
-    inputTokens: 'inputTokens',
-    outputTokens: 'outputTokens',
-    totalTokens: 'totalTokens',
-    modelName: 'modelName',
+    user_id: 'user_id',
+    input_tokens: 'input_tokens',
+    output_tokens: 'output_tokens',
+    total_tokens: 'total_tokens',
+    model_name: 'model_name',
     cost: 'cost',
-    conversationId: 'conversationId',
-    createdAt: 'createdAt'
+    conversation_id: 'conversation_id',
+    created_at: 'created_at'
   };
 
   export type TokenUsageLogScalarFieldEnum = (typeof TokenUsageLogScalarFieldEnum)[keyof typeof TokenUsageLogScalarFieldEnum]
@@ -7072,10 +8344,10 @@ export namespace Prisma {
 
   export const ConversationScalarFieldEnum: {
     id: 'id',
-    userId: 'userId',
+    user_id: 'user_id',
     title: 'title',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    created_at: 'created_at',
+    updated_at: 'updated_at'
   };
 
   export type ConversationScalarFieldEnum = (typeof ConversationScalarFieldEnum)[keyof typeof ConversationScalarFieldEnum]
@@ -7083,10 +8355,10 @@ export namespace Prisma {
 
   export const MessageScalarFieldEnum: {
     id: 'id',
-    conversationId: 'conversationId',
+    conversation_id: 'conversation_id',
     role: 'role',
     content: 'content',
-    createdAt: 'createdAt'
+    created_at: 'created_at'
   };
 
   export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
@@ -7094,17 +8366,32 @@ export namespace Prisma {
 
   export const MessageImageScalarFieldEnum: {
     id: 'id',
-    messageId: 'messageId',
+    message_id: 'message_id',
     filename: 'filename',
-    originalName: 'originalName',
-    mimeType: 'mimeType',
+    original_name: 'original_name',
+    mime_type: 'mime_type',
     size: 'size',
-    base64Data: 'base64Data',
+    base64_data: 'base64_data',
     url: 'url',
-    createdAt: 'createdAt'
+    created_at: 'created_at'
   };
 
   export type MessageImageScalarFieldEnum = (typeof MessageImageScalarFieldEnum)[keyof typeof MessageImageScalarFieldEnum]
+
+
+  export const SharedConversationScalarFieldEnum: {
+    id: 'id',
+    conversation_id: 'conversation_id',
+    share_id: 'share_id',
+    title: 'title',
+    is_public: 'is_public',
+    expires_at: 'expires_at',
+    view_count: 'view_count',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type SharedConversationScalarFieldEnum = (typeof SharedConversationScalarFieldEnum)[keyof typeof SharedConversationScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -7190,6 +8477,13 @@ export namespace Prisma {
    */
   export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
     
+
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
   /**
    * Deep Input Types
    */
@@ -7203,14 +8497,14 @@ export namespace Prisma {
     email?: StringFilter<"User"> | string
     password?: StringFilter<"User"> | string
     name?: StringNullableFilter<"User"> | string | null
-    studentId?: StringNullableFilter<"User"> | string | null
-    tokenUsage?: IntFilter<"User"> | number
-    estimatedCost?: FloatFilter<"User"> | number
-    createdAt?: DateTimeFilter<"User"> | Date | string
-    updatedAt?: DateTimeFilter<"User"> | Date | string
-    googleId?: StringNullableFilter<"User"> | string | null
-    profileImage?: StringNullableFilter<"User"> | string | null
-    tokenUsageLogs?: TokenUsageLogListRelationFilter
+    student_id?: StringNullableFilter<"User"> | string | null
+    token_usage?: IntFilter<"User"> | number
+    estimated_cost?: FloatFilter<"User"> | number
+    created_at?: DateTimeFilter<"User"> | Date | string
+    updated_at?: DateTimeFilter<"User"> | Date | string
+    google_id?: StringNullableFilter<"User"> | string | null
+    profile_image?: StringNullableFilter<"User"> | string | null
+    token_usage_logs?: TokenUsageLogListRelationFilter
     conversations?: ConversationListRelationFilter
   }
 
@@ -7219,48 +8513,48 @@ export namespace Prisma {
     email?: SortOrder
     password?: SortOrder
     name?: SortOrderInput | SortOrder
-    studentId?: SortOrderInput | SortOrder
-    tokenUsage?: SortOrder
-    estimatedCost?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    googleId?: SortOrderInput | SortOrder
-    profileImage?: SortOrderInput | SortOrder
-    tokenUsageLogs?: TokenUsageLogOrderByRelationAggregateInput
+    student_id?: SortOrderInput | SortOrder
+    token_usage?: SortOrder
+    estimated_cost?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    google_id?: SortOrderInput | SortOrder
+    profile_image?: SortOrderInput | SortOrder
+    token_usage_logs?: TokenUsageLogOrderByRelationAggregateInput
     conversations?: ConversationOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     email?: string
-    studentId?: string
-    googleId?: string
+    student_id?: string
+    google_id?: string
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
     password?: StringFilter<"User"> | string
     name?: StringNullableFilter<"User"> | string | null
-    tokenUsage?: IntFilter<"User"> | number
-    estimatedCost?: FloatFilter<"User"> | number
-    createdAt?: DateTimeFilter<"User"> | Date | string
-    updatedAt?: DateTimeFilter<"User"> | Date | string
-    profileImage?: StringNullableFilter<"User"> | string | null
-    tokenUsageLogs?: TokenUsageLogListRelationFilter
+    token_usage?: IntFilter<"User"> | number
+    estimated_cost?: FloatFilter<"User"> | number
+    created_at?: DateTimeFilter<"User"> | Date | string
+    updated_at?: DateTimeFilter<"User"> | Date | string
+    profile_image?: StringNullableFilter<"User"> | string | null
+    token_usage_logs?: TokenUsageLogListRelationFilter
     conversations?: ConversationListRelationFilter
-  }, "id" | "email" | "studentId" | "googleId">
+  }, "id" | "email" | "student_id" | "google_id">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
     email?: SortOrder
     password?: SortOrder
     name?: SortOrderInput | SortOrder
-    studentId?: SortOrderInput | SortOrder
-    tokenUsage?: SortOrder
-    estimatedCost?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    googleId?: SortOrderInput | SortOrder
-    profileImage?: SortOrderInput | SortOrder
+    student_id?: SortOrderInput | SortOrder
+    token_usage?: SortOrder
+    estimated_cost?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    google_id?: SortOrderInput | SortOrder
+    profile_image?: SortOrderInput | SortOrder
     _count?: UserCountOrderByAggregateInput
     _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -7276,13 +8570,13 @@ export namespace Prisma {
     email?: StringWithAggregatesFilter<"User"> | string
     password?: StringWithAggregatesFilter<"User"> | string
     name?: StringNullableWithAggregatesFilter<"User"> | string | null
-    studentId?: StringNullableWithAggregatesFilter<"User"> | string | null
-    tokenUsage?: IntWithAggregatesFilter<"User"> | number
-    estimatedCost?: FloatWithAggregatesFilter<"User"> | number
-    createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
-    googleId?: StringNullableWithAggregatesFilter<"User"> | string | null
-    profileImage?: StringNullableWithAggregatesFilter<"User"> | string | null
+    student_id?: StringNullableWithAggregatesFilter<"User"> | string | null
+    token_usage?: IntWithAggregatesFilter<"User"> | number
+    estimated_cost?: FloatWithAggregatesFilter<"User"> | number
+    created_at?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    google_id?: StringNullableWithAggregatesFilter<"User"> | string | null
+    profile_image?: StringNullableWithAggregatesFilter<"User"> | string | null
   }
 
   export type TokenUsageLogWhereInput = {
@@ -7290,27 +8584,27 @@ export namespace Prisma {
     OR?: TokenUsageLogWhereInput[]
     NOT?: TokenUsageLogWhereInput | TokenUsageLogWhereInput[]
     id?: StringFilter<"TokenUsageLog"> | string
-    userId?: StringFilter<"TokenUsageLog"> | string
-    inputTokens?: IntFilter<"TokenUsageLog"> | number
-    outputTokens?: IntFilter<"TokenUsageLog"> | number
-    totalTokens?: IntFilter<"TokenUsageLog"> | number
-    modelName?: StringFilter<"TokenUsageLog"> | string
+    user_id?: StringFilter<"TokenUsageLog"> | string
+    input_tokens?: IntFilter<"TokenUsageLog"> | number
+    output_tokens?: IntFilter<"TokenUsageLog"> | number
+    total_tokens?: IntFilter<"TokenUsageLog"> | number
+    model_name?: StringFilter<"TokenUsageLog"> | string
     cost?: FloatFilter<"TokenUsageLog"> | number
-    conversationId?: StringNullableFilter<"TokenUsageLog"> | string | null
-    createdAt?: DateTimeFilter<"TokenUsageLog"> | Date | string
+    conversation_id?: StringNullableFilter<"TokenUsageLog"> | string | null
+    created_at?: DateTimeFilter<"TokenUsageLog"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type TokenUsageLogOrderByWithRelationInput = {
     id?: SortOrder
-    userId?: SortOrder
-    inputTokens?: SortOrder
-    outputTokens?: SortOrder
-    totalTokens?: SortOrder
-    modelName?: SortOrder
+    user_id?: SortOrder
+    input_tokens?: SortOrder
+    output_tokens?: SortOrder
+    total_tokens?: SortOrder
+    model_name?: SortOrder
     cost?: SortOrder
-    conversationId?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
+    conversation_id?: SortOrderInput | SortOrder
+    created_at?: SortOrder
     user?: UserOrderByWithRelationInput
   }
 
@@ -7319,27 +8613,27 @@ export namespace Prisma {
     AND?: TokenUsageLogWhereInput | TokenUsageLogWhereInput[]
     OR?: TokenUsageLogWhereInput[]
     NOT?: TokenUsageLogWhereInput | TokenUsageLogWhereInput[]
-    userId?: StringFilter<"TokenUsageLog"> | string
-    inputTokens?: IntFilter<"TokenUsageLog"> | number
-    outputTokens?: IntFilter<"TokenUsageLog"> | number
-    totalTokens?: IntFilter<"TokenUsageLog"> | number
-    modelName?: StringFilter<"TokenUsageLog"> | string
+    user_id?: StringFilter<"TokenUsageLog"> | string
+    input_tokens?: IntFilter<"TokenUsageLog"> | number
+    output_tokens?: IntFilter<"TokenUsageLog"> | number
+    total_tokens?: IntFilter<"TokenUsageLog"> | number
+    model_name?: StringFilter<"TokenUsageLog"> | string
     cost?: FloatFilter<"TokenUsageLog"> | number
-    conversationId?: StringNullableFilter<"TokenUsageLog"> | string | null
-    createdAt?: DateTimeFilter<"TokenUsageLog"> | Date | string
+    conversation_id?: StringNullableFilter<"TokenUsageLog"> | string | null
+    created_at?: DateTimeFilter<"TokenUsageLog"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
   export type TokenUsageLogOrderByWithAggregationInput = {
     id?: SortOrder
-    userId?: SortOrder
-    inputTokens?: SortOrder
-    outputTokens?: SortOrder
-    totalTokens?: SortOrder
-    modelName?: SortOrder
+    user_id?: SortOrder
+    input_tokens?: SortOrder
+    output_tokens?: SortOrder
+    total_tokens?: SortOrder
+    model_name?: SortOrder
     cost?: SortOrder
-    conversationId?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
+    conversation_id?: SortOrderInput | SortOrder
+    created_at?: SortOrder
     _count?: TokenUsageLogCountOrderByAggregateInput
     _avg?: TokenUsageLogAvgOrderByAggregateInput
     _max?: TokenUsageLogMaxOrderByAggregateInput
@@ -7352,14 +8646,14 @@ export namespace Prisma {
     OR?: TokenUsageLogScalarWhereWithAggregatesInput[]
     NOT?: TokenUsageLogScalarWhereWithAggregatesInput | TokenUsageLogScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"TokenUsageLog"> | string
-    userId?: StringWithAggregatesFilter<"TokenUsageLog"> | string
-    inputTokens?: IntWithAggregatesFilter<"TokenUsageLog"> | number
-    outputTokens?: IntWithAggregatesFilter<"TokenUsageLog"> | number
-    totalTokens?: IntWithAggregatesFilter<"TokenUsageLog"> | number
-    modelName?: StringWithAggregatesFilter<"TokenUsageLog"> | string
+    user_id?: StringWithAggregatesFilter<"TokenUsageLog"> | string
+    input_tokens?: IntWithAggregatesFilter<"TokenUsageLog"> | number
+    output_tokens?: IntWithAggregatesFilter<"TokenUsageLog"> | number
+    total_tokens?: IntWithAggregatesFilter<"TokenUsageLog"> | number
+    model_name?: StringWithAggregatesFilter<"TokenUsageLog"> | string
     cost?: FloatWithAggregatesFilter<"TokenUsageLog"> | number
-    conversationId?: StringNullableWithAggregatesFilter<"TokenUsageLog"> | string | null
-    createdAt?: DateTimeWithAggregatesFilter<"TokenUsageLog"> | Date | string
+    conversation_id?: StringNullableWithAggregatesFilter<"TokenUsageLog"> | string | null
+    created_at?: DateTimeWithAggregatesFilter<"TokenUsageLog"> | Date | string
   }
 
   export type ConversationWhereInput = {
@@ -7367,22 +8661,24 @@ export namespace Prisma {
     OR?: ConversationWhereInput[]
     NOT?: ConversationWhereInput | ConversationWhereInput[]
     id?: StringFilter<"Conversation"> | string
-    userId?: StringFilter<"Conversation"> | string
+    user_id?: StringFilter<"Conversation"> | string
     title?: StringFilter<"Conversation"> | string
-    createdAt?: DateTimeFilter<"Conversation"> | Date | string
-    updatedAt?: DateTimeFilter<"Conversation"> | Date | string
+    created_at?: DateTimeFilter<"Conversation"> | Date | string
+    updated_at?: DateTimeFilter<"Conversation"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     messages?: MessageListRelationFilter
+    shared_conversations?: SharedConversationListRelationFilter
   }
 
   export type ConversationOrderByWithRelationInput = {
     id?: SortOrder
-    userId?: SortOrder
+    user_id?: SortOrder
     title?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
     user?: UserOrderByWithRelationInput
     messages?: MessageOrderByRelationAggregateInput
+    shared_conversations?: SharedConversationOrderByRelationAggregateInput
   }
 
   export type ConversationWhereUniqueInput = Prisma.AtLeast<{
@@ -7390,20 +8686,21 @@ export namespace Prisma {
     AND?: ConversationWhereInput | ConversationWhereInput[]
     OR?: ConversationWhereInput[]
     NOT?: ConversationWhereInput | ConversationWhereInput[]
-    userId?: StringFilter<"Conversation"> | string
+    user_id?: StringFilter<"Conversation"> | string
     title?: StringFilter<"Conversation"> | string
-    createdAt?: DateTimeFilter<"Conversation"> | Date | string
-    updatedAt?: DateTimeFilter<"Conversation"> | Date | string
+    created_at?: DateTimeFilter<"Conversation"> | Date | string
+    updated_at?: DateTimeFilter<"Conversation"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     messages?: MessageListRelationFilter
+    shared_conversations?: SharedConversationListRelationFilter
   }, "id">
 
   export type ConversationOrderByWithAggregationInput = {
     id?: SortOrder
-    userId?: SortOrder
+    user_id?: SortOrder
     title?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
     _count?: ConversationCountOrderByAggregateInput
     _max?: ConversationMaxOrderByAggregateInput
     _min?: ConversationMinOrderByAggregateInput
@@ -7414,10 +8711,10 @@ export namespace Prisma {
     OR?: ConversationScalarWhereWithAggregatesInput[]
     NOT?: ConversationScalarWhereWithAggregatesInput | ConversationScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Conversation"> | string
-    userId?: StringWithAggregatesFilter<"Conversation"> | string
+    user_id?: StringWithAggregatesFilter<"Conversation"> | string
     title?: StringWithAggregatesFilter<"Conversation"> | string
-    createdAt?: DateTimeWithAggregatesFilter<"Conversation"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"Conversation"> | Date | string
+    created_at?: DateTimeWithAggregatesFilter<"Conversation"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"Conversation"> | Date | string
   }
 
   export type MessageWhereInput = {
@@ -7425,20 +8722,20 @@ export namespace Prisma {
     OR?: MessageWhereInput[]
     NOT?: MessageWhereInput | MessageWhereInput[]
     id?: StringFilter<"Message"> | string
-    conversationId?: StringFilter<"Message"> | string
+    conversation_id?: StringFilter<"Message"> | string
     role?: StringFilter<"Message"> | string
     content?: StringFilter<"Message"> | string
-    createdAt?: DateTimeFilter<"Message"> | Date | string
+    created_at?: DateTimeFilter<"Message"> | Date | string
     conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
     images?: MessageImageListRelationFilter
   }
 
   export type MessageOrderByWithRelationInput = {
     id?: SortOrder
-    conversationId?: SortOrder
+    conversation_id?: SortOrder
     role?: SortOrder
     content?: SortOrder
-    createdAt?: SortOrder
+    created_at?: SortOrder
     conversation?: ConversationOrderByWithRelationInput
     images?: MessageImageOrderByRelationAggregateInput
   }
@@ -7448,20 +8745,20 @@ export namespace Prisma {
     AND?: MessageWhereInput | MessageWhereInput[]
     OR?: MessageWhereInput[]
     NOT?: MessageWhereInput | MessageWhereInput[]
-    conversationId?: StringFilter<"Message"> | string
+    conversation_id?: StringFilter<"Message"> | string
     role?: StringFilter<"Message"> | string
     content?: StringFilter<"Message"> | string
-    createdAt?: DateTimeFilter<"Message"> | Date | string
+    created_at?: DateTimeFilter<"Message"> | Date | string
     conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
     images?: MessageImageListRelationFilter
   }, "id">
 
   export type MessageOrderByWithAggregationInput = {
     id?: SortOrder
-    conversationId?: SortOrder
+    conversation_id?: SortOrder
     role?: SortOrder
     content?: SortOrder
-    createdAt?: SortOrder
+    created_at?: SortOrder
     _count?: MessageCountOrderByAggregateInput
     _max?: MessageMaxOrderByAggregateInput
     _min?: MessageMinOrderByAggregateInput
@@ -7472,10 +8769,10 @@ export namespace Prisma {
     OR?: MessageScalarWhereWithAggregatesInput[]
     NOT?: MessageScalarWhereWithAggregatesInput | MessageScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Message"> | string
-    conversationId?: StringWithAggregatesFilter<"Message"> | string
+    conversation_id?: StringWithAggregatesFilter<"Message"> | string
     role?: StringWithAggregatesFilter<"Message"> | string
     content?: StringWithAggregatesFilter<"Message"> | string
-    createdAt?: DateTimeWithAggregatesFilter<"Message"> | Date | string
+    created_at?: DateTimeWithAggregatesFilter<"Message"> | Date | string
   }
 
   export type MessageImageWhereInput = {
@@ -7483,27 +8780,27 @@ export namespace Prisma {
     OR?: MessageImageWhereInput[]
     NOT?: MessageImageWhereInput | MessageImageWhereInput[]
     id?: StringFilter<"MessageImage"> | string
-    messageId?: StringFilter<"MessageImage"> | string
+    message_id?: StringFilter<"MessageImage"> | string
     filename?: StringFilter<"MessageImage"> | string
-    originalName?: StringNullableFilter<"MessageImage"> | string | null
-    mimeType?: StringFilter<"MessageImage"> | string
+    original_name?: StringNullableFilter<"MessageImage"> | string | null
+    mime_type?: StringFilter<"MessageImage"> | string
     size?: IntFilter<"MessageImage"> | number
-    base64Data?: StringFilter<"MessageImage"> | string
+    base64_data?: StringFilter<"MessageImage"> | string
     url?: StringNullableFilter<"MessageImage"> | string | null
-    createdAt?: DateTimeFilter<"MessageImage"> | Date | string
+    created_at?: DateTimeFilter<"MessageImage"> | Date | string
     message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
   }
 
   export type MessageImageOrderByWithRelationInput = {
     id?: SortOrder
-    messageId?: SortOrder
+    message_id?: SortOrder
     filename?: SortOrder
-    originalName?: SortOrderInput | SortOrder
-    mimeType?: SortOrder
+    original_name?: SortOrderInput | SortOrder
+    mime_type?: SortOrder
     size?: SortOrder
-    base64Data?: SortOrder
+    base64_data?: SortOrder
     url?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
+    created_at?: SortOrder
     message?: MessageOrderByWithRelationInput
   }
 
@@ -7512,27 +8809,27 @@ export namespace Prisma {
     AND?: MessageImageWhereInput | MessageImageWhereInput[]
     OR?: MessageImageWhereInput[]
     NOT?: MessageImageWhereInput | MessageImageWhereInput[]
-    messageId?: StringFilter<"MessageImage"> | string
+    message_id?: StringFilter<"MessageImage"> | string
     filename?: StringFilter<"MessageImage"> | string
-    originalName?: StringNullableFilter<"MessageImage"> | string | null
-    mimeType?: StringFilter<"MessageImage"> | string
+    original_name?: StringNullableFilter<"MessageImage"> | string | null
+    mime_type?: StringFilter<"MessageImage"> | string
     size?: IntFilter<"MessageImage"> | number
-    base64Data?: StringFilter<"MessageImage"> | string
+    base64_data?: StringFilter<"MessageImage"> | string
     url?: StringNullableFilter<"MessageImage"> | string | null
-    createdAt?: DateTimeFilter<"MessageImage"> | Date | string
+    created_at?: DateTimeFilter<"MessageImage"> | Date | string
     message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
   }, "id">
 
   export type MessageImageOrderByWithAggregationInput = {
     id?: SortOrder
-    messageId?: SortOrder
+    message_id?: SortOrder
     filename?: SortOrder
-    originalName?: SortOrderInput | SortOrder
-    mimeType?: SortOrder
+    original_name?: SortOrderInput | SortOrder
+    mime_type?: SortOrder
     size?: SortOrder
-    base64Data?: SortOrder
+    base64_data?: SortOrder
     url?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
+    created_at?: SortOrder
     _count?: MessageImageCountOrderByAggregateInput
     _avg?: MessageImageAvgOrderByAggregateInput
     _max?: MessageImageMaxOrderByAggregateInput
@@ -7545,14 +8842,91 @@ export namespace Prisma {
     OR?: MessageImageScalarWhereWithAggregatesInput[]
     NOT?: MessageImageScalarWhereWithAggregatesInput | MessageImageScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"MessageImage"> | string
-    messageId?: StringWithAggregatesFilter<"MessageImage"> | string
+    message_id?: StringWithAggregatesFilter<"MessageImage"> | string
     filename?: StringWithAggregatesFilter<"MessageImage"> | string
-    originalName?: StringNullableWithAggregatesFilter<"MessageImage"> | string | null
-    mimeType?: StringWithAggregatesFilter<"MessageImage"> | string
+    original_name?: StringNullableWithAggregatesFilter<"MessageImage"> | string | null
+    mime_type?: StringWithAggregatesFilter<"MessageImage"> | string
     size?: IntWithAggregatesFilter<"MessageImage"> | number
-    base64Data?: StringWithAggregatesFilter<"MessageImage"> | string
+    base64_data?: StringWithAggregatesFilter<"MessageImage"> | string
     url?: StringNullableWithAggregatesFilter<"MessageImage"> | string | null
-    createdAt?: DateTimeWithAggregatesFilter<"MessageImage"> | Date | string
+    created_at?: DateTimeWithAggregatesFilter<"MessageImage"> | Date | string
+  }
+
+  export type SharedConversationWhereInput = {
+    AND?: SharedConversationWhereInput | SharedConversationWhereInput[]
+    OR?: SharedConversationWhereInput[]
+    NOT?: SharedConversationWhereInput | SharedConversationWhereInput[]
+    id?: StringFilter<"SharedConversation"> | string
+    conversation_id?: StringFilter<"SharedConversation"> | string
+    share_id?: StringFilter<"SharedConversation"> | string
+    title?: StringFilter<"SharedConversation"> | string
+    is_public?: BoolFilter<"SharedConversation"> | boolean
+    expires_at?: DateTimeNullableFilter<"SharedConversation"> | Date | string | null
+    view_count?: IntFilter<"SharedConversation"> | number
+    created_at?: DateTimeFilter<"SharedConversation"> | Date | string
+    updated_at?: DateTimeFilter<"SharedConversation"> | Date | string
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
+  }
+
+  export type SharedConversationOrderByWithRelationInput = {
+    id?: SortOrder
+    conversation_id?: SortOrder
+    share_id?: SortOrder
+    title?: SortOrder
+    is_public?: SortOrder
+    expires_at?: SortOrderInput | SortOrder
+    view_count?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    conversation?: ConversationOrderByWithRelationInput
+  }
+
+  export type SharedConversationWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    share_id?: string
+    AND?: SharedConversationWhereInput | SharedConversationWhereInput[]
+    OR?: SharedConversationWhereInput[]
+    NOT?: SharedConversationWhereInput | SharedConversationWhereInput[]
+    conversation_id?: StringFilter<"SharedConversation"> | string
+    title?: StringFilter<"SharedConversation"> | string
+    is_public?: BoolFilter<"SharedConversation"> | boolean
+    expires_at?: DateTimeNullableFilter<"SharedConversation"> | Date | string | null
+    view_count?: IntFilter<"SharedConversation"> | number
+    created_at?: DateTimeFilter<"SharedConversation"> | Date | string
+    updated_at?: DateTimeFilter<"SharedConversation"> | Date | string
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
+  }, "id" | "share_id">
+
+  export type SharedConversationOrderByWithAggregationInput = {
+    id?: SortOrder
+    conversation_id?: SortOrder
+    share_id?: SortOrder
+    title?: SortOrder
+    is_public?: SortOrder
+    expires_at?: SortOrderInput | SortOrder
+    view_count?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: SharedConversationCountOrderByAggregateInput
+    _avg?: SharedConversationAvgOrderByAggregateInput
+    _max?: SharedConversationMaxOrderByAggregateInput
+    _min?: SharedConversationMinOrderByAggregateInput
+    _sum?: SharedConversationSumOrderByAggregateInput
+  }
+
+  export type SharedConversationScalarWhereWithAggregatesInput = {
+    AND?: SharedConversationScalarWhereWithAggregatesInput | SharedConversationScalarWhereWithAggregatesInput[]
+    OR?: SharedConversationScalarWhereWithAggregatesInput[]
+    NOT?: SharedConversationScalarWhereWithAggregatesInput | SharedConversationScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"SharedConversation"> | string
+    conversation_id?: StringWithAggregatesFilter<"SharedConversation"> | string
+    share_id?: StringWithAggregatesFilter<"SharedConversation"> | string
+    title?: StringWithAggregatesFilter<"SharedConversation"> | string
+    is_public?: BoolWithAggregatesFilter<"SharedConversation"> | boolean
+    expires_at?: DateTimeNullableWithAggregatesFilter<"SharedConversation"> | Date | string | null
+    view_count?: IntWithAggregatesFilter<"SharedConversation"> | number
+    created_at?: DateTimeWithAggregatesFilter<"SharedConversation"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"SharedConversation"> | Date | string
   }
 
   export type UserCreateInput = {
@@ -7560,14 +8934,14 @@ export namespace Prisma {
     email: string
     password: string
     name?: string | null
-    studentId?: string | null
-    tokenUsage?: number
-    estimatedCost?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    googleId?: string | null
-    profileImage?: string | null
-    tokenUsageLogs?: TokenUsageLogCreateNestedManyWithoutUserInput
+    student_id?: string | null
+    token_usage?: number
+    estimated_cost?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    google_id?: string | null
+    profile_image?: string | null
+    token_usage_logs?: TokenUsageLogCreateNestedManyWithoutUserInput
     conversations?: ConversationCreateNestedManyWithoutUserInput
   }
 
@@ -7576,14 +8950,14 @@ export namespace Prisma {
     email: string
     password: string
     name?: string | null
-    studentId?: string | null
-    tokenUsage?: number
-    estimatedCost?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    googleId?: string | null
-    profileImage?: string | null
-    tokenUsageLogs?: TokenUsageLogUncheckedCreateNestedManyWithoutUserInput
+    student_id?: string | null
+    token_usage?: number
+    estimated_cost?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    google_id?: string | null
+    profile_image?: string | null
+    token_usage_logs?: TokenUsageLogUncheckedCreateNestedManyWithoutUserInput
     conversations?: ConversationUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -7592,14 +8966,14 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    studentId?: NullableStringFieldUpdateOperationsInput | string | null
-    tokenUsage?: IntFieldUpdateOperationsInput | number
-    estimatedCost?: FloatFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    googleId?: NullableStringFieldUpdateOperationsInput | string | null
-    profileImage?: NullableStringFieldUpdateOperationsInput | string | null
-    tokenUsageLogs?: TokenUsageLogUpdateManyWithoutUserNestedInput
+    student_id?: NullableStringFieldUpdateOperationsInput | string | null
+    token_usage?: IntFieldUpdateOperationsInput | number
+    estimated_cost?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    google_id?: NullableStringFieldUpdateOperationsInput | string | null
+    profile_image?: NullableStringFieldUpdateOperationsInput | string | null
+    token_usage_logs?: TokenUsageLogUpdateManyWithoutUserNestedInput
     conversations?: ConversationUpdateManyWithoutUserNestedInput
   }
 
@@ -7608,14 +8982,14 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    studentId?: NullableStringFieldUpdateOperationsInput | string | null
-    tokenUsage?: IntFieldUpdateOperationsInput | number
-    estimatedCost?: FloatFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    googleId?: NullableStringFieldUpdateOperationsInput | string | null
-    profileImage?: NullableStringFieldUpdateOperationsInput | string | null
-    tokenUsageLogs?: TokenUsageLogUncheckedUpdateManyWithoutUserNestedInput
+    student_id?: NullableStringFieldUpdateOperationsInput | string | null
+    token_usage?: IntFieldUpdateOperationsInput | number
+    estimated_cost?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    google_id?: NullableStringFieldUpdateOperationsInput | string | null
+    profile_image?: NullableStringFieldUpdateOperationsInput | string | null
+    token_usage_logs?: TokenUsageLogUncheckedUpdateManyWithoutUserNestedInput
     conversations?: ConversationUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -7624,13 +8998,13 @@ export namespace Prisma {
     email: string
     password: string
     name?: string | null
-    studentId?: string | null
-    tokenUsage?: number
-    estimatedCost?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    googleId?: string | null
-    profileImage?: string | null
+    student_id?: string | null
+    token_usage?: number
+    estimated_cost?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    google_id?: string | null
+    profile_image?: string | null
   }
 
   export type UserUpdateManyMutationInput = {
@@ -7638,13 +9012,13 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    studentId?: NullableStringFieldUpdateOperationsInput | string | null
-    tokenUsage?: IntFieldUpdateOperationsInput | number
-    estimatedCost?: FloatFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    googleId?: NullableStringFieldUpdateOperationsInput | string | null
-    profileImage?: NullableStringFieldUpdateOperationsInput | string | null
+    student_id?: NullableStringFieldUpdateOperationsInput | string | null
+    token_usage?: IntFieldUpdateOperationsInput | number
+    estimated_cost?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    google_id?: NullableStringFieldUpdateOperationsInput | string | null
+    profile_image?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -7652,172 +9026,176 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    studentId?: NullableStringFieldUpdateOperationsInput | string | null
-    tokenUsage?: IntFieldUpdateOperationsInput | number
-    estimatedCost?: FloatFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    googleId?: NullableStringFieldUpdateOperationsInput | string | null
-    profileImage?: NullableStringFieldUpdateOperationsInput | string | null
+    student_id?: NullableStringFieldUpdateOperationsInput | string | null
+    token_usage?: IntFieldUpdateOperationsInput | number
+    estimated_cost?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    google_id?: NullableStringFieldUpdateOperationsInput | string | null
+    profile_image?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type TokenUsageLogCreateInput = {
     id?: string
-    inputTokens: number
-    outputTokens: number
-    totalTokens: number
-    modelName: string
+    input_tokens: number
+    output_tokens: number
+    total_tokens: number
+    model_name: string
     cost: number
-    conversationId?: string | null
-    createdAt?: Date | string
-    user: UserCreateNestedOneWithoutTokenUsageLogsInput
+    conversation_id?: string | null
+    created_at?: Date | string
+    user: UserCreateNestedOneWithoutToken_usage_logsInput
   }
 
   export type TokenUsageLogUncheckedCreateInput = {
     id?: string
-    userId: string
-    inputTokens: number
-    outputTokens: number
-    totalTokens: number
-    modelName: string
+    user_id: string
+    input_tokens: number
+    output_tokens: number
+    total_tokens: number
+    model_name: string
     cost: number
-    conversationId?: string | null
-    createdAt?: Date | string
+    conversation_id?: string | null
+    created_at?: Date | string
   }
 
   export type TokenUsageLogUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    inputTokens?: IntFieldUpdateOperationsInput | number
-    outputTokens?: IntFieldUpdateOperationsInput | number
-    totalTokens?: IntFieldUpdateOperationsInput | number
-    modelName?: StringFieldUpdateOperationsInput | string
+    input_tokens?: IntFieldUpdateOperationsInput | number
+    output_tokens?: IntFieldUpdateOperationsInput | number
+    total_tokens?: IntFieldUpdateOperationsInput | number
+    model_name?: StringFieldUpdateOperationsInput | string
     cost?: FloatFieldUpdateOperationsInput | number
-    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutTokenUsageLogsNestedInput
+    conversation_id?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutToken_usage_logsNestedInput
   }
 
   export type TokenUsageLogUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    inputTokens?: IntFieldUpdateOperationsInput | number
-    outputTokens?: IntFieldUpdateOperationsInput | number
-    totalTokens?: IntFieldUpdateOperationsInput | number
-    modelName?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    input_tokens?: IntFieldUpdateOperationsInput | number
+    output_tokens?: IntFieldUpdateOperationsInput | number
+    total_tokens?: IntFieldUpdateOperationsInput | number
+    model_name?: StringFieldUpdateOperationsInput | string
     cost?: FloatFieldUpdateOperationsInput | number
-    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversation_id?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TokenUsageLogCreateManyInput = {
     id?: string
-    userId: string
-    inputTokens: number
-    outputTokens: number
-    totalTokens: number
-    modelName: string
+    user_id: string
+    input_tokens: number
+    output_tokens: number
+    total_tokens: number
+    model_name: string
     cost: number
-    conversationId?: string | null
-    createdAt?: Date | string
+    conversation_id?: string | null
+    created_at?: Date | string
   }
 
   export type TokenUsageLogUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    inputTokens?: IntFieldUpdateOperationsInput | number
-    outputTokens?: IntFieldUpdateOperationsInput | number
-    totalTokens?: IntFieldUpdateOperationsInput | number
-    modelName?: StringFieldUpdateOperationsInput | string
+    input_tokens?: IntFieldUpdateOperationsInput | number
+    output_tokens?: IntFieldUpdateOperationsInput | number
+    total_tokens?: IntFieldUpdateOperationsInput | number
+    model_name?: StringFieldUpdateOperationsInput | string
     cost?: FloatFieldUpdateOperationsInput | number
-    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversation_id?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TokenUsageLogUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    inputTokens?: IntFieldUpdateOperationsInput | number
-    outputTokens?: IntFieldUpdateOperationsInput | number
-    totalTokens?: IntFieldUpdateOperationsInput | number
-    modelName?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    input_tokens?: IntFieldUpdateOperationsInput | number
+    output_tokens?: IntFieldUpdateOperationsInput | number
+    total_tokens?: IntFieldUpdateOperationsInput | number
+    model_name?: StringFieldUpdateOperationsInput | string
     cost?: FloatFieldUpdateOperationsInput | number
-    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversation_id?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ConversationCreateInput = {
     id?: string
     title?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    created_at?: Date | string
+    updated_at?: Date | string
     user: UserCreateNestedOneWithoutConversationsInput
     messages?: MessageCreateNestedManyWithoutConversationInput
+    shared_conversations?: SharedConversationCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateInput = {
     id?: string
-    userId: string
+    user_id: string
     title?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    created_at?: Date | string
+    updated_at?: Date | string
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
+    shared_conversations?: SharedConversationUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutConversationsNestedInput
     messages?: MessageUpdateManyWithoutConversationNestedInput
+    shared_conversations?: SharedConversationUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
+    shared_conversations?: SharedConversationUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationCreateManyInput = {
     id?: string
-    userId: string
+    user_id: string
     title?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    created_at?: Date | string
+    updated_at?: Date | string
   }
 
   export type ConversationUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ConversationUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageCreateInput = {
     id?: string
     role: string
     content: string
-    createdAt?: Date | string
+    created_at?: Date | string
     conversation: ConversationCreateNestedOneWithoutMessagesInput
     images?: MessageImageCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUncheckedCreateInput = {
     id?: string
-    conversationId: string
+    conversation_id: string
     role: string
     content: string
-    createdAt?: Date | string
+    created_at?: Date | string
     images?: MessageImageUncheckedCreateNestedManyWithoutMessageInput
   }
 
@@ -7825,124 +9203,207 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
     images?: MessageImageUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    conversationId?: StringFieldUpdateOperationsInput | string
+    conversation_id?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     images?: MessageImageUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageCreateManyInput = {
     id?: string
-    conversationId: string
+    conversation_id: string
     role: string
     content: string
-    createdAt?: Date | string
+    created_at?: Date | string
   }
 
   export type MessageUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    conversationId?: StringFieldUpdateOperationsInput | string
+    conversation_id?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageImageCreateInput = {
     id?: string
     filename: string
-    originalName?: string | null
-    mimeType: string
+    original_name?: string | null
+    mime_type: string
     size: number
-    base64Data: string
+    base64_data: string
     url?: string | null
-    createdAt?: Date | string
+    created_at?: Date | string
     message: MessageCreateNestedOneWithoutImagesInput
   }
 
   export type MessageImageUncheckedCreateInput = {
     id?: string
-    messageId: string
+    message_id: string
     filename: string
-    originalName?: string | null
-    mimeType: string
+    original_name?: string | null
+    mime_type: string
     size: number
-    base64Data: string
+    base64_data: string
     url?: string | null
-    createdAt?: Date | string
+    created_at?: Date | string
   }
 
   export type MessageImageUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
-    originalName?: NullableStringFieldUpdateOperationsInput | string | null
-    mimeType?: StringFieldUpdateOperationsInput | string
+    original_name?: NullableStringFieldUpdateOperationsInput | string | null
+    mime_type?: StringFieldUpdateOperationsInput | string
     size?: IntFieldUpdateOperationsInput | number
-    base64Data?: StringFieldUpdateOperationsInput | string
+    base64_data?: StringFieldUpdateOperationsInput | string
     url?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     message?: MessageUpdateOneRequiredWithoutImagesNestedInput
   }
 
   export type MessageImageUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    messageId?: StringFieldUpdateOperationsInput | string
+    message_id?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
-    originalName?: NullableStringFieldUpdateOperationsInput | string | null
-    mimeType?: StringFieldUpdateOperationsInput | string
+    original_name?: NullableStringFieldUpdateOperationsInput | string | null
+    mime_type?: StringFieldUpdateOperationsInput | string
     size?: IntFieldUpdateOperationsInput | number
-    base64Data?: StringFieldUpdateOperationsInput | string
+    base64_data?: StringFieldUpdateOperationsInput | string
     url?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageImageCreateManyInput = {
     id?: string
-    messageId: string
+    message_id: string
     filename: string
-    originalName?: string | null
-    mimeType: string
+    original_name?: string | null
+    mime_type: string
     size: number
-    base64Data: string
+    base64_data: string
     url?: string | null
-    createdAt?: Date | string
+    created_at?: Date | string
   }
 
   export type MessageImageUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
-    originalName?: NullableStringFieldUpdateOperationsInput | string | null
-    mimeType?: StringFieldUpdateOperationsInput | string
+    original_name?: NullableStringFieldUpdateOperationsInput | string | null
+    mime_type?: StringFieldUpdateOperationsInput | string
     size?: IntFieldUpdateOperationsInput | number
-    base64Data?: StringFieldUpdateOperationsInput | string
+    base64_data?: StringFieldUpdateOperationsInput | string
     url?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageImageUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    messageId?: StringFieldUpdateOperationsInput | string
+    message_id?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
-    originalName?: NullableStringFieldUpdateOperationsInput | string | null
-    mimeType?: StringFieldUpdateOperationsInput | string
+    original_name?: NullableStringFieldUpdateOperationsInput | string | null
+    mime_type?: StringFieldUpdateOperationsInput | string
     size?: IntFieldUpdateOperationsInput | number
-    base64Data?: StringFieldUpdateOperationsInput | string
+    base64_data?: StringFieldUpdateOperationsInput | string
     url?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SharedConversationCreateInput = {
+    id?: string
+    share_id?: string
+    title: string
+    is_public?: boolean
+    expires_at?: Date | string | null
+    view_count?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    conversation: ConversationCreateNestedOneWithoutShared_conversationsInput
+  }
+
+  export type SharedConversationUncheckedCreateInput = {
+    id?: string
+    conversation_id: string
+    share_id?: string
+    title: string
+    is_public?: boolean
+    expires_at?: Date | string | null
+    view_count?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type SharedConversationUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    share_id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    is_public?: BoolFieldUpdateOperationsInput | boolean
+    expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    view_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversation?: ConversationUpdateOneRequiredWithoutShared_conversationsNestedInput
+  }
+
+  export type SharedConversationUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conversation_id?: StringFieldUpdateOperationsInput | string
+    share_id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    is_public?: BoolFieldUpdateOperationsInput | boolean
+    expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    view_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SharedConversationCreateManyInput = {
+    id?: string
+    conversation_id: string
+    share_id?: string
+    title: string
+    is_public?: boolean
+    expires_at?: Date | string | null
+    view_count?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type SharedConversationUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    share_id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    is_public?: BoolFieldUpdateOperationsInput | boolean
+    expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    view_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SharedConversationUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conversation_id?: StringFieldUpdateOperationsInput | string
+    share_id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    is_public?: BoolFieldUpdateOperationsInput | boolean
+    expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    view_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -8038,18 +9499,18 @@ export namespace Prisma {
     email?: SortOrder
     password?: SortOrder
     name?: SortOrder
-    studentId?: SortOrder
-    tokenUsage?: SortOrder
-    estimatedCost?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    googleId?: SortOrder
-    profileImage?: SortOrder
+    student_id?: SortOrder
+    token_usage?: SortOrder
+    estimated_cost?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    google_id?: SortOrder
+    profile_image?: SortOrder
   }
 
   export type UserAvgOrderByAggregateInput = {
-    tokenUsage?: SortOrder
-    estimatedCost?: SortOrder
+    token_usage?: SortOrder
+    estimated_cost?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -8057,13 +9518,13 @@ export namespace Prisma {
     email?: SortOrder
     password?: SortOrder
     name?: SortOrder
-    studentId?: SortOrder
-    tokenUsage?: SortOrder
-    estimatedCost?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    googleId?: SortOrder
-    profileImage?: SortOrder
+    student_id?: SortOrder
+    token_usage?: SortOrder
+    estimated_cost?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    google_id?: SortOrder
+    profile_image?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -8071,18 +9532,18 @@ export namespace Prisma {
     email?: SortOrder
     password?: SortOrder
     name?: SortOrder
-    studentId?: SortOrder
-    tokenUsage?: SortOrder
-    estimatedCost?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    googleId?: SortOrder
-    profileImage?: SortOrder
+    student_id?: SortOrder
+    token_usage?: SortOrder
+    estimated_cost?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    google_id?: SortOrder
+    profile_image?: SortOrder
   }
 
   export type UserSumOrderByAggregateInput = {
-    tokenUsage?: SortOrder
-    estimatedCost?: SortOrder
+    token_usage?: SortOrder
+    estimated_cost?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -8174,51 +9635,51 @@ export namespace Prisma {
 
   export type TokenUsageLogCountOrderByAggregateInput = {
     id?: SortOrder
-    userId?: SortOrder
-    inputTokens?: SortOrder
-    outputTokens?: SortOrder
-    totalTokens?: SortOrder
-    modelName?: SortOrder
+    user_id?: SortOrder
+    input_tokens?: SortOrder
+    output_tokens?: SortOrder
+    total_tokens?: SortOrder
+    model_name?: SortOrder
     cost?: SortOrder
-    conversationId?: SortOrder
-    createdAt?: SortOrder
+    conversation_id?: SortOrder
+    created_at?: SortOrder
   }
 
   export type TokenUsageLogAvgOrderByAggregateInput = {
-    inputTokens?: SortOrder
-    outputTokens?: SortOrder
-    totalTokens?: SortOrder
+    input_tokens?: SortOrder
+    output_tokens?: SortOrder
+    total_tokens?: SortOrder
     cost?: SortOrder
   }
 
   export type TokenUsageLogMaxOrderByAggregateInput = {
     id?: SortOrder
-    userId?: SortOrder
-    inputTokens?: SortOrder
-    outputTokens?: SortOrder
-    totalTokens?: SortOrder
-    modelName?: SortOrder
+    user_id?: SortOrder
+    input_tokens?: SortOrder
+    output_tokens?: SortOrder
+    total_tokens?: SortOrder
+    model_name?: SortOrder
     cost?: SortOrder
-    conversationId?: SortOrder
-    createdAt?: SortOrder
+    conversation_id?: SortOrder
+    created_at?: SortOrder
   }
 
   export type TokenUsageLogMinOrderByAggregateInput = {
     id?: SortOrder
-    userId?: SortOrder
-    inputTokens?: SortOrder
-    outputTokens?: SortOrder
-    totalTokens?: SortOrder
-    modelName?: SortOrder
+    user_id?: SortOrder
+    input_tokens?: SortOrder
+    output_tokens?: SortOrder
+    total_tokens?: SortOrder
+    model_name?: SortOrder
     cost?: SortOrder
-    conversationId?: SortOrder
-    createdAt?: SortOrder
+    conversation_id?: SortOrder
+    created_at?: SortOrder
   }
 
   export type TokenUsageLogSumOrderByAggregateInput = {
-    inputTokens?: SortOrder
-    outputTokens?: SortOrder
-    totalTokens?: SortOrder
+    input_tokens?: SortOrder
+    output_tokens?: SortOrder
+    total_tokens?: SortOrder
     cost?: SortOrder
   }
 
@@ -8228,32 +9689,42 @@ export namespace Prisma {
     none?: MessageWhereInput
   }
 
+  export type SharedConversationListRelationFilter = {
+    every?: SharedConversationWhereInput
+    some?: SharedConversationWhereInput
+    none?: SharedConversationWhereInput
+  }
+
   export type MessageOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type SharedConversationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type ConversationCountOrderByAggregateInput = {
     id?: SortOrder
-    userId?: SortOrder
+    user_id?: SortOrder
     title?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
   }
 
   export type ConversationMaxOrderByAggregateInput = {
     id?: SortOrder
-    userId?: SortOrder
+    user_id?: SortOrder
     title?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
   }
 
   export type ConversationMinOrderByAggregateInput = {
     id?: SortOrder
-    userId?: SortOrder
+    user_id?: SortOrder
     title?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
   }
 
   export type ConversationScalarRelationFilter = {
@@ -8273,26 +9744,26 @@ export namespace Prisma {
 
   export type MessageCountOrderByAggregateInput = {
     id?: SortOrder
-    conversationId?: SortOrder
+    conversation_id?: SortOrder
     role?: SortOrder
     content?: SortOrder
-    createdAt?: SortOrder
+    created_at?: SortOrder
   }
 
   export type MessageMaxOrderByAggregateInput = {
     id?: SortOrder
-    conversationId?: SortOrder
+    conversation_id?: SortOrder
     role?: SortOrder
     content?: SortOrder
-    createdAt?: SortOrder
+    created_at?: SortOrder
   }
 
   export type MessageMinOrderByAggregateInput = {
     id?: SortOrder
-    conversationId?: SortOrder
+    conversation_id?: SortOrder
     role?: SortOrder
     content?: SortOrder
-    createdAt?: SortOrder
+    created_at?: SortOrder
   }
 
   export type MessageScalarRelationFilter = {
@@ -8302,14 +9773,14 @@ export namespace Prisma {
 
   export type MessageImageCountOrderByAggregateInput = {
     id?: SortOrder
-    messageId?: SortOrder
+    message_id?: SortOrder
     filename?: SortOrder
-    originalName?: SortOrder
-    mimeType?: SortOrder
+    original_name?: SortOrder
+    mime_type?: SortOrder
     size?: SortOrder
-    base64Data?: SortOrder
+    base64_data?: SortOrder
     url?: SortOrder
-    createdAt?: SortOrder
+    created_at?: SortOrder
   }
 
   export type MessageImageAvgOrderByAggregateInput = {
@@ -8318,30 +9789,112 @@ export namespace Prisma {
 
   export type MessageImageMaxOrderByAggregateInput = {
     id?: SortOrder
-    messageId?: SortOrder
+    message_id?: SortOrder
     filename?: SortOrder
-    originalName?: SortOrder
-    mimeType?: SortOrder
+    original_name?: SortOrder
+    mime_type?: SortOrder
     size?: SortOrder
-    base64Data?: SortOrder
+    base64_data?: SortOrder
     url?: SortOrder
-    createdAt?: SortOrder
+    created_at?: SortOrder
   }
 
   export type MessageImageMinOrderByAggregateInput = {
     id?: SortOrder
-    messageId?: SortOrder
+    message_id?: SortOrder
     filename?: SortOrder
-    originalName?: SortOrder
-    mimeType?: SortOrder
+    original_name?: SortOrder
+    mime_type?: SortOrder
     size?: SortOrder
-    base64Data?: SortOrder
+    base64_data?: SortOrder
     url?: SortOrder
-    createdAt?: SortOrder
+    created_at?: SortOrder
   }
 
   export type MessageImageSumOrderByAggregateInput = {
     size?: SortOrder
+  }
+
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type SharedConversationCountOrderByAggregateInput = {
+    id?: SortOrder
+    conversation_id?: SortOrder
+    share_id?: SortOrder
+    title?: SortOrder
+    is_public?: SortOrder
+    expires_at?: SortOrder
+    view_count?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type SharedConversationAvgOrderByAggregateInput = {
+    view_count?: SortOrder
+  }
+
+  export type SharedConversationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    conversation_id?: SortOrder
+    share_id?: SortOrder
+    title?: SortOrder
+    is_public?: SortOrder
+    expires_at?: SortOrder
+    view_count?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type SharedConversationMinOrderByAggregateInput = {
+    id?: SortOrder
+    conversation_id?: SortOrder
+    share_id?: SortOrder
+    title?: SortOrder
+    is_public?: SortOrder
+    expires_at?: SortOrder
+    view_count?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type SharedConversationSumOrderByAggregateInput = {
+    view_count?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type TokenUsageLogCreateNestedManyWithoutUserInput = {
@@ -8456,18 +10009,18 @@ export namespace Prisma {
     deleteMany?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
   }
 
-  export type UserCreateNestedOneWithoutTokenUsageLogsInput = {
-    create?: XOR<UserCreateWithoutTokenUsageLogsInput, UserUncheckedCreateWithoutTokenUsageLogsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutTokenUsageLogsInput
+  export type UserCreateNestedOneWithoutToken_usage_logsInput = {
+    create?: XOR<UserCreateWithoutToken_usage_logsInput, UserUncheckedCreateWithoutToken_usage_logsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutToken_usage_logsInput
     connect?: UserWhereUniqueInput
   }
 
-  export type UserUpdateOneRequiredWithoutTokenUsageLogsNestedInput = {
-    create?: XOR<UserCreateWithoutTokenUsageLogsInput, UserUncheckedCreateWithoutTokenUsageLogsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutTokenUsageLogsInput
-    upsert?: UserUpsertWithoutTokenUsageLogsInput
+  export type UserUpdateOneRequiredWithoutToken_usage_logsNestedInput = {
+    create?: XOR<UserCreateWithoutToken_usage_logsInput, UserUncheckedCreateWithoutToken_usage_logsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutToken_usage_logsInput
+    upsert?: UserUpsertWithoutToken_usage_logsInput
     connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTokenUsageLogsInput, UserUpdateWithoutTokenUsageLogsInput>, UserUncheckedUpdateWithoutTokenUsageLogsInput>
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutToken_usage_logsInput, UserUpdateWithoutToken_usage_logsInput>, UserUncheckedUpdateWithoutToken_usage_logsInput>
   }
 
   export type UserCreateNestedOneWithoutConversationsInput = {
@@ -8483,11 +10036,25 @@ export namespace Prisma {
     connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
   }
 
+  export type SharedConversationCreateNestedManyWithoutConversationInput = {
+    create?: XOR<SharedConversationCreateWithoutConversationInput, SharedConversationUncheckedCreateWithoutConversationInput> | SharedConversationCreateWithoutConversationInput[] | SharedConversationUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: SharedConversationCreateOrConnectWithoutConversationInput | SharedConversationCreateOrConnectWithoutConversationInput[]
+    createMany?: SharedConversationCreateManyConversationInputEnvelope
+    connect?: SharedConversationWhereUniqueInput | SharedConversationWhereUniqueInput[]
+  }
+
   export type MessageUncheckedCreateNestedManyWithoutConversationInput = {
     create?: XOR<MessageCreateWithoutConversationInput, MessageUncheckedCreateWithoutConversationInput> | MessageCreateWithoutConversationInput[] | MessageUncheckedCreateWithoutConversationInput[]
     connectOrCreate?: MessageCreateOrConnectWithoutConversationInput | MessageCreateOrConnectWithoutConversationInput[]
     createMany?: MessageCreateManyConversationInputEnvelope
     connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+  }
+
+  export type SharedConversationUncheckedCreateNestedManyWithoutConversationInput = {
+    create?: XOR<SharedConversationCreateWithoutConversationInput, SharedConversationUncheckedCreateWithoutConversationInput> | SharedConversationCreateWithoutConversationInput[] | SharedConversationUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: SharedConversationCreateOrConnectWithoutConversationInput | SharedConversationCreateOrConnectWithoutConversationInput[]
+    createMany?: SharedConversationCreateManyConversationInputEnvelope
+    connect?: SharedConversationWhereUniqueInput | SharedConversationWhereUniqueInput[]
   }
 
   export type UserUpdateOneRequiredWithoutConversationsNestedInput = {
@@ -8512,6 +10079,20 @@ export namespace Prisma {
     deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
   }
 
+  export type SharedConversationUpdateManyWithoutConversationNestedInput = {
+    create?: XOR<SharedConversationCreateWithoutConversationInput, SharedConversationUncheckedCreateWithoutConversationInput> | SharedConversationCreateWithoutConversationInput[] | SharedConversationUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: SharedConversationCreateOrConnectWithoutConversationInput | SharedConversationCreateOrConnectWithoutConversationInput[]
+    upsert?: SharedConversationUpsertWithWhereUniqueWithoutConversationInput | SharedConversationUpsertWithWhereUniqueWithoutConversationInput[]
+    createMany?: SharedConversationCreateManyConversationInputEnvelope
+    set?: SharedConversationWhereUniqueInput | SharedConversationWhereUniqueInput[]
+    disconnect?: SharedConversationWhereUniqueInput | SharedConversationWhereUniqueInput[]
+    delete?: SharedConversationWhereUniqueInput | SharedConversationWhereUniqueInput[]
+    connect?: SharedConversationWhereUniqueInput | SharedConversationWhereUniqueInput[]
+    update?: SharedConversationUpdateWithWhereUniqueWithoutConversationInput | SharedConversationUpdateWithWhereUniqueWithoutConversationInput[]
+    updateMany?: SharedConversationUpdateManyWithWhereWithoutConversationInput | SharedConversationUpdateManyWithWhereWithoutConversationInput[]
+    deleteMany?: SharedConversationScalarWhereInput | SharedConversationScalarWhereInput[]
+  }
+
   export type MessageUncheckedUpdateManyWithoutConversationNestedInput = {
     create?: XOR<MessageCreateWithoutConversationInput, MessageUncheckedCreateWithoutConversationInput> | MessageCreateWithoutConversationInput[] | MessageUncheckedCreateWithoutConversationInput[]
     connectOrCreate?: MessageCreateOrConnectWithoutConversationInput | MessageCreateOrConnectWithoutConversationInput[]
@@ -8524,6 +10105,20 @@ export namespace Prisma {
     update?: MessageUpdateWithWhereUniqueWithoutConversationInput | MessageUpdateWithWhereUniqueWithoutConversationInput[]
     updateMany?: MessageUpdateManyWithWhereWithoutConversationInput | MessageUpdateManyWithWhereWithoutConversationInput[]
     deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
+  }
+
+  export type SharedConversationUncheckedUpdateManyWithoutConversationNestedInput = {
+    create?: XOR<SharedConversationCreateWithoutConversationInput, SharedConversationUncheckedCreateWithoutConversationInput> | SharedConversationCreateWithoutConversationInput[] | SharedConversationUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: SharedConversationCreateOrConnectWithoutConversationInput | SharedConversationCreateOrConnectWithoutConversationInput[]
+    upsert?: SharedConversationUpsertWithWhereUniqueWithoutConversationInput | SharedConversationUpsertWithWhereUniqueWithoutConversationInput[]
+    createMany?: SharedConversationCreateManyConversationInputEnvelope
+    set?: SharedConversationWhereUniqueInput | SharedConversationWhereUniqueInput[]
+    disconnect?: SharedConversationWhereUniqueInput | SharedConversationWhereUniqueInput[]
+    delete?: SharedConversationWhereUniqueInput | SharedConversationWhereUniqueInput[]
+    connect?: SharedConversationWhereUniqueInput | SharedConversationWhereUniqueInput[]
+    update?: SharedConversationUpdateWithWhereUniqueWithoutConversationInput | SharedConversationUpdateWithWhereUniqueWithoutConversationInput[]
+    updateMany?: SharedConversationUpdateManyWithWhereWithoutConversationInput | SharedConversationUpdateManyWithWhereWithoutConversationInput[]
+    deleteMany?: SharedConversationScalarWhereInput | SharedConversationScalarWhereInput[]
   }
 
   export type ConversationCreateNestedOneWithoutMessagesInput = {
@@ -8594,6 +10189,28 @@ export namespace Prisma {
     upsert?: MessageUpsertWithoutImagesInput
     connect?: MessageWhereUniqueInput
     update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutImagesInput, MessageUpdateWithoutImagesInput>, MessageUncheckedUpdateWithoutImagesInput>
+  }
+
+  export type ConversationCreateNestedOneWithoutShared_conversationsInput = {
+    create?: XOR<ConversationCreateWithoutShared_conversationsInput, ConversationUncheckedCreateWithoutShared_conversationsInput>
+    connectOrCreate?: ConversationCreateOrConnectWithoutShared_conversationsInput
+    connect?: ConversationWhereUniqueInput
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
+  export type ConversationUpdateOneRequiredWithoutShared_conversationsNestedInput = {
+    create?: XOR<ConversationCreateWithoutShared_conversationsInput, ConversationUncheckedCreateWithoutShared_conversationsInput>
+    connectOrCreate?: ConversationCreateOrConnectWithoutShared_conversationsInput
+    upsert?: ConversationUpsertWithoutShared_conversationsInput
+    connect?: ConversationWhereUniqueInput
+    update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutShared_conversationsInput, ConversationUpdateWithoutShared_conversationsInput>, ConversationUncheckedUpdateWithoutShared_conversationsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -8748,26 +10365,64 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
   export type TokenUsageLogCreateWithoutUserInput = {
     id?: string
-    inputTokens: number
-    outputTokens: number
-    totalTokens: number
-    modelName: string
+    input_tokens: number
+    output_tokens: number
+    total_tokens: number
+    model_name: string
     cost: number
-    conversationId?: string | null
-    createdAt?: Date | string
+    conversation_id?: string | null
+    created_at?: Date | string
   }
 
   export type TokenUsageLogUncheckedCreateWithoutUserInput = {
     id?: string
-    inputTokens: number
-    outputTokens: number
-    totalTokens: number
-    modelName: string
+    input_tokens: number
+    output_tokens: number
+    total_tokens: number
+    model_name: string
     cost: number
-    conversationId?: string | null
-    createdAt?: Date | string
+    conversation_id?: string | null
+    created_at?: Date | string
   }
 
   export type TokenUsageLogCreateOrConnectWithoutUserInput = {
@@ -8783,17 +10438,19 @@ export namespace Prisma {
   export type ConversationCreateWithoutUserInput = {
     id?: string
     title?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    created_at?: Date | string
+    updated_at?: Date | string
     messages?: MessageCreateNestedManyWithoutConversationInput
+    shared_conversations?: SharedConversationCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutUserInput = {
     id?: string
     title?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    created_at?: Date | string
+    updated_at?: Date | string
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
+    shared_conversations?: SharedConversationUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutUserInput = {
@@ -8827,14 +10484,14 @@ export namespace Prisma {
     OR?: TokenUsageLogScalarWhereInput[]
     NOT?: TokenUsageLogScalarWhereInput | TokenUsageLogScalarWhereInput[]
     id?: StringFilter<"TokenUsageLog"> | string
-    userId?: StringFilter<"TokenUsageLog"> | string
-    inputTokens?: IntFilter<"TokenUsageLog"> | number
-    outputTokens?: IntFilter<"TokenUsageLog"> | number
-    totalTokens?: IntFilter<"TokenUsageLog"> | number
-    modelName?: StringFilter<"TokenUsageLog"> | string
+    user_id?: StringFilter<"TokenUsageLog"> | string
+    input_tokens?: IntFilter<"TokenUsageLog"> | number
+    output_tokens?: IntFilter<"TokenUsageLog"> | number
+    total_tokens?: IntFilter<"TokenUsageLog"> | number
+    model_name?: StringFilter<"TokenUsageLog"> | string
     cost?: FloatFilter<"TokenUsageLog"> | number
-    conversationId?: StringNullableFilter<"TokenUsageLog"> | string | null
-    createdAt?: DateTimeFilter<"TokenUsageLog"> | Date | string
+    conversation_id?: StringNullableFilter<"TokenUsageLog"> | string | null
+    created_at?: DateTimeFilter<"TokenUsageLog"> | Date | string
   }
 
   export type ConversationUpsertWithWhereUniqueWithoutUserInput = {
@@ -8858,85 +10515,85 @@ export namespace Prisma {
     OR?: ConversationScalarWhereInput[]
     NOT?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
     id?: StringFilter<"Conversation"> | string
-    userId?: StringFilter<"Conversation"> | string
+    user_id?: StringFilter<"Conversation"> | string
     title?: StringFilter<"Conversation"> | string
-    createdAt?: DateTimeFilter<"Conversation"> | Date | string
-    updatedAt?: DateTimeFilter<"Conversation"> | Date | string
+    created_at?: DateTimeFilter<"Conversation"> | Date | string
+    updated_at?: DateTimeFilter<"Conversation"> | Date | string
   }
 
-  export type UserCreateWithoutTokenUsageLogsInput = {
+  export type UserCreateWithoutToken_usage_logsInput = {
     id?: string
     email: string
     password: string
     name?: string | null
-    studentId?: string | null
-    tokenUsage?: number
-    estimatedCost?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    googleId?: string | null
-    profileImage?: string | null
+    student_id?: string | null
+    token_usage?: number
+    estimated_cost?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    google_id?: string | null
+    profile_image?: string | null
     conversations?: ConversationCreateNestedManyWithoutUserInput
   }
 
-  export type UserUncheckedCreateWithoutTokenUsageLogsInput = {
+  export type UserUncheckedCreateWithoutToken_usage_logsInput = {
     id?: string
     email: string
     password: string
     name?: string | null
-    studentId?: string | null
-    tokenUsage?: number
-    estimatedCost?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    googleId?: string | null
-    profileImage?: string | null
+    student_id?: string | null
+    token_usage?: number
+    estimated_cost?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    google_id?: string | null
+    profile_image?: string | null
     conversations?: ConversationUncheckedCreateNestedManyWithoutUserInput
   }
 
-  export type UserCreateOrConnectWithoutTokenUsageLogsInput = {
+  export type UserCreateOrConnectWithoutToken_usage_logsInput = {
     where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutTokenUsageLogsInput, UserUncheckedCreateWithoutTokenUsageLogsInput>
+    create: XOR<UserCreateWithoutToken_usage_logsInput, UserUncheckedCreateWithoutToken_usage_logsInput>
   }
 
-  export type UserUpsertWithoutTokenUsageLogsInput = {
-    update: XOR<UserUpdateWithoutTokenUsageLogsInput, UserUncheckedUpdateWithoutTokenUsageLogsInput>
-    create: XOR<UserCreateWithoutTokenUsageLogsInput, UserUncheckedCreateWithoutTokenUsageLogsInput>
+  export type UserUpsertWithoutToken_usage_logsInput = {
+    update: XOR<UserUpdateWithoutToken_usage_logsInput, UserUncheckedUpdateWithoutToken_usage_logsInput>
+    create: XOR<UserCreateWithoutToken_usage_logsInput, UserUncheckedCreateWithoutToken_usage_logsInput>
     where?: UserWhereInput
   }
 
-  export type UserUpdateToOneWithWhereWithoutTokenUsageLogsInput = {
+  export type UserUpdateToOneWithWhereWithoutToken_usage_logsInput = {
     where?: UserWhereInput
-    data: XOR<UserUpdateWithoutTokenUsageLogsInput, UserUncheckedUpdateWithoutTokenUsageLogsInput>
+    data: XOR<UserUpdateWithoutToken_usage_logsInput, UserUncheckedUpdateWithoutToken_usage_logsInput>
   }
 
-  export type UserUpdateWithoutTokenUsageLogsInput = {
+  export type UserUpdateWithoutToken_usage_logsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    studentId?: NullableStringFieldUpdateOperationsInput | string | null
-    tokenUsage?: IntFieldUpdateOperationsInput | number
-    estimatedCost?: FloatFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    googleId?: NullableStringFieldUpdateOperationsInput | string | null
-    profileImage?: NullableStringFieldUpdateOperationsInput | string | null
+    student_id?: NullableStringFieldUpdateOperationsInput | string | null
+    token_usage?: IntFieldUpdateOperationsInput | number
+    estimated_cost?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    google_id?: NullableStringFieldUpdateOperationsInput | string | null
+    profile_image?: NullableStringFieldUpdateOperationsInput | string | null
     conversations?: ConversationUpdateManyWithoutUserNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutTokenUsageLogsInput = {
+  export type UserUncheckedUpdateWithoutToken_usage_logsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    studentId?: NullableStringFieldUpdateOperationsInput | string | null
-    tokenUsage?: IntFieldUpdateOperationsInput | number
-    estimatedCost?: FloatFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    googleId?: NullableStringFieldUpdateOperationsInput | string | null
-    profileImage?: NullableStringFieldUpdateOperationsInput | string | null
+    student_id?: NullableStringFieldUpdateOperationsInput | string | null
+    token_usage?: IntFieldUpdateOperationsInput | number
+    estimated_cost?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    google_id?: NullableStringFieldUpdateOperationsInput | string | null
+    profile_image?: NullableStringFieldUpdateOperationsInput | string | null
     conversations?: ConversationUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -8945,14 +10602,14 @@ export namespace Prisma {
     email: string
     password: string
     name?: string | null
-    studentId?: string | null
-    tokenUsage?: number
-    estimatedCost?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    googleId?: string | null
-    profileImage?: string | null
-    tokenUsageLogs?: TokenUsageLogCreateNestedManyWithoutUserInput
+    student_id?: string | null
+    token_usage?: number
+    estimated_cost?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    google_id?: string | null
+    profile_image?: string | null
+    token_usage_logs?: TokenUsageLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutConversationsInput = {
@@ -8960,14 +10617,14 @@ export namespace Prisma {
     email: string
     password: string
     name?: string | null
-    studentId?: string | null
-    tokenUsage?: number
-    estimatedCost?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    googleId?: string | null
-    profileImage?: string | null
-    tokenUsageLogs?: TokenUsageLogUncheckedCreateNestedManyWithoutUserInput
+    student_id?: string | null
+    token_usage?: number
+    estimated_cost?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    google_id?: string | null
+    profile_image?: string | null
+    token_usage_logs?: TokenUsageLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutConversationsInput = {
@@ -8979,7 +10636,7 @@ export namespace Prisma {
     id?: string
     role: string
     content: string
-    createdAt?: Date | string
+    created_at?: Date | string
     images?: MessageImageCreateNestedManyWithoutMessageInput
   }
 
@@ -8987,7 +10644,7 @@ export namespace Prisma {
     id?: string
     role: string
     content: string
-    createdAt?: Date | string
+    created_at?: Date | string
     images?: MessageImageUncheckedCreateNestedManyWithoutMessageInput
   }
 
@@ -8998,6 +10655,38 @@ export namespace Prisma {
 
   export type MessageCreateManyConversationInputEnvelope = {
     data: MessageCreateManyConversationInput | MessageCreateManyConversationInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type SharedConversationCreateWithoutConversationInput = {
+    id?: string
+    share_id?: string
+    title: string
+    is_public?: boolean
+    expires_at?: Date | string | null
+    view_count?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type SharedConversationUncheckedCreateWithoutConversationInput = {
+    id?: string
+    share_id?: string
+    title: string
+    is_public?: boolean
+    expires_at?: Date | string | null
+    view_count?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type SharedConversationCreateOrConnectWithoutConversationInput = {
+    where: SharedConversationWhereUniqueInput
+    create: XOR<SharedConversationCreateWithoutConversationInput, SharedConversationUncheckedCreateWithoutConversationInput>
+  }
+
+  export type SharedConversationCreateManyConversationInputEnvelope = {
+    data: SharedConversationCreateManyConversationInput | SharedConversationCreateManyConversationInput[]
     skipDuplicates?: boolean
   }
 
@@ -9017,14 +10706,14 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    studentId?: NullableStringFieldUpdateOperationsInput | string | null
-    tokenUsage?: IntFieldUpdateOperationsInput | number
-    estimatedCost?: FloatFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    googleId?: NullableStringFieldUpdateOperationsInput | string | null
-    profileImage?: NullableStringFieldUpdateOperationsInput | string | null
-    tokenUsageLogs?: TokenUsageLogUpdateManyWithoutUserNestedInput
+    student_id?: NullableStringFieldUpdateOperationsInput | string | null
+    token_usage?: IntFieldUpdateOperationsInput | number
+    estimated_cost?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    google_id?: NullableStringFieldUpdateOperationsInput | string | null
+    profile_image?: NullableStringFieldUpdateOperationsInput | string | null
+    token_usage_logs?: TokenUsageLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConversationsInput = {
@@ -9032,14 +10721,14 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
     name?: NullableStringFieldUpdateOperationsInput | string | null
-    studentId?: NullableStringFieldUpdateOperationsInput | string | null
-    tokenUsage?: IntFieldUpdateOperationsInput | number
-    estimatedCost?: FloatFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    googleId?: NullableStringFieldUpdateOperationsInput | string | null
-    profileImage?: NullableStringFieldUpdateOperationsInput | string | null
-    tokenUsageLogs?: TokenUsageLogUncheckedUpdateManyWithoutUserNestedInput
+    student_id?: NullableStringFieldUpdateOperationsInput | string | null
+    token_usage?: IntFieldUpdateOperationsInput | number
+    estimated_cost?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    google_id?: NullableStringFieldUpdateOperationsInput | string | null
+    profile_image?: NullableStringFieldUpdateOperationsInput | string | null
+    token_usage_logs?: TokenUsageLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type MessageUpsertWithWhereUniqueWithoutConversationInput = {
@@ -9063,26 +10752,59 @@ export namespace Prisma {
     OR?: MessageScalarWhereInput[]
     NOT?: MessageScalarWhereInput | MessageScalarWhereInput[]
     id?: StringFilter<"Message"> | string
-    conversationId?: StringFilter<"Message"> | string
+    conversation_id?: StringFilter<"Message"> | string
     role?: StringFilter<"Message"> | string
     content?: StringFilter<"Message"> | string
-    createdAt?: DateTimeFilter<"Message"> | Date | string
+    created_at?: DateTimeFilter<"Message"> | Date | string
+  }
+
+  export type SharedConversationUpsertWithWhereUniqueWithoutConversationInput = {
+    where: SharedConversationWhereUniqueInput
+    update: XOR<SharedConversationUpdateWithoutConversationInput, SharedConversationUncheckedUpdateWithoutConversationInput>
+    create: XOR<SharedConversationCreateWithoutConversationInput, SharedConversationUncheckedCreateWithoutConversationInput>
+  }
+
+  export type SharedConversationUpdateWithWhereUniqueWithoutConversationInput = {
+    where: SharedConversationWhereUniqueInput
+    data: XOR<SharedConversationUpdateWithoutConversationInput, SharedConversationUncheckedUpdateWithoutConversationInput>
+  }
+
+  export type SharedConversationUpdateManyWithWhereWithoutConversationInput = {
+    where: SharedConversationScalarWhereInput
+    data: XOR<SharedConversationUpdateManyMutationInput, SharedConversationUncheckedUpdateManyWithoutConversationInput>
+  }
+
+  export type SharedConversationScalarWhereInput = {
+    AND?: SharedConversationScalarWhereInput | SharedConversationScalarWhereInput[]
+    OR?: SharedConversationScalarWhereInput[]
+    NOT?: SharedConversationScalarWhereInput | SharedConversationScalarWhereInput[]
+    id?: StringFilter<"SharedConversation"> | string
+    conversation_id?: StringFilter<"SharedConversation"> | string
+    share_id?: StringFilter<"SharedConversation"> | string
+    title?: StringFilter<"SharedConversation"> | string
+    is_public?: BoolFilter<"SharedConversation"> | boolean
+    expires_at?: DateTimeNullableFilter<"SharedConversation"> | Date | string | null
+    view_count?: IntFilter<"SharedConversation"> | number
+    created_at?: DateTimeFilter<"SharedConversation"> | Date | string
+    updated_at?: DateTimeFilter<"SharedConversation"> | Date | string
   }
 
   export type ConversationCreateWithoutMessagesInput = {
     id?: string
     title?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    created_at?: Date | string
+    updated_at?: Date | string
     user: UserCreateNestedOneWithoutConversationsInput
+    shared_conversations?: SharedConversationCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateWithoutMessagesInput = {
     id?: string
-    userId: string
+    user_id: string
     title?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    created_at?: Date | string
+    updated_at?: Date | string
+    shared_conversations?: SharedConversationUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationCreateOrConnectWithoutMessagesInput = {
@@ -9093,23 +10815,23 @@ export namespace Prisma {
   export type MessageImageCreateWithoutMessageInput = {
     id?: string
     filename: string
-    originalName?: string | null
-    mimeType: string
+    original_name?: string | null
+    mime_type: string
     size: number
-    base64Data: string
+    base64_data: string
     url?: string | null
-    createdAt?: Date | string
+    created_at?: Date | string
   }
 
   export type MessageImageUncheckedCreateWithoutMessageInput = {
     id?: string
     filename: string
-    originalName?: string | null
-    mimeType: string
+    original_name?: string | null
+    mime_type: string
     size: number
-    base64Data: string
+    base64_data: string
     url?: string | null
-    createdAt?: Date | string
+    created_at?: Date | string
   }
 
   export type MessageImageCreateOrConnectWithoutMessageInput = {
@@ -9136,17 +10858,19 @@ export namespace Prisma {
   export type ConversationUpdateWithoutMessagesInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutConversationsNestedInput
+    shared_conversations?: SharedConversationUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutMessagesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    shared_conversations?: SharedConversationUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type MessageImageUpsertWithWhereUniqueWithoutMessageInput = {
@@ -9170,30 +10894,30 @@ export namespace Prisma {
     OR?: MessageImageScalarWhereInput[]
     NOT?: MessageImageScalarWhereInput | MessageImageScalarWhereInput[]
     id?: StringFilter<"MessageImage"> | string
-    messageId?: StringFilter<"MessageImage"> | string
+    message_id?: StringFilter<"MessageImage"> | string
     filename?: StringFilter<"MessageImage"> | string
-    originalName?: StringNullableFilter<"MessageImage"> | string | null
-    mimeType?: StringFilter<"MessageImage"> | string
+    original_name?: StringNullableFilter<"MessageImage"> | string | null
+    mime_type?: StringFilter<"MessageImage"> | string
     size?: IntFilter<"MessageImage"> | number
-    base64Data?: StringFilter<"MessageImage"> | string
+    base64_data?: StringFilter<"MessageImage"> | string
     url?: StringNullableFilter<"MessageImage"> | string | null
-    createdAt?: DateTimeFilter<"MessageImage"> | Date | string
+    created_at?: DateTimeFilter<"MessageImage"> | Date | string
   }
 
   export type MessageCreateWithoutImagesInput = {
     id?: string
     role: string
     content: string
-    createdAt?: Date | string
+    created_at?: Date | string
     conversation: ConversationCreateNestedOneWithoutMessagesInput
   }
 
   export type MessageUncheckedCreateWithoutImagesInput = {
     id?: string
-    conversationId: string
+    conversation_id: string
     role: string
     content: string
-    createdAt?: Date | string
+    created_at?: Date | string
   }
 
   export type MessageCreateOrConnectWithoutImagesInput = {
@@ -9216,104 +10940,169 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
   }
 
   export type MessageUncheckedUpdateWithoutImagesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    conversationId?: StringFieldUpdateOperationsInput | string
+    conversation_id?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ConversationCreateWithoutShared_conversationsInput = {
+    id?: string
+    title?: string
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutConversationsInput
+    messages?: MessageCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationUncheckedCreateWithoutShared_conversationsInput = {
+    id?: string
+    user_id: string
+    title?: string
+    created_at?: Date | string
+    updated_at?: Date | string
+    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationCreateOrConnectWithoutShared_conversationsInput = {
+    where: ConversationWhereUniqueInput
+    create: XOR<ConversationCreateWithoutShared_conversationsInput, ConversationUncheckedCreateWithoutShared_conversationsInput>
+  }
+
+  export type ConversationUpsertWithoutShared_conversationsInput = {
+    update: XOR<ConversationUpdateWithoutShared_conversationsInput, ConversationUncheckedUpdateWithoutShared_conversationsInput>
+    create: XOR<ConversationCreateWithoutShared_conversationsInput, ConversationUncheckedCreateWithoutShared_conversationsInput>
+    where?: ConversationWhereInput
+  }
+
+  export type ConversationUpdateToOneWithWhereWithoutShared_conversationsInput = {
+    where?: ConversationWhereInput
+    data: XOR<ConversationUpdateWithoutShared_conversationsInput, ConversationUncheckedUpdateWithoutShared_conversationsInput>
+  }
+
+  export type ConversationUpdateWithoutShared_conversationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutConversationsNestedInput
+    messages?: MessageUpdateManyWithoutConversationNestedInput
+  }
+
+  export type ConversationUncheckedUpdateWithoutShared_conversationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type TokenUsageLogCreateManyUserInput = {
     id?: string
-    inputTokens: number
-    outputTokens: number
-    totalTokens: number
-    modelName: string
+    input_tokens: number
+    output_tokens: number
+    total_tokens: number
+    model_name: string
     cost: number
-    conversationId?: string | null
-    createdAt?: Date | string
+    conversation_id?: string | null
+    created_at?: Date | string
   }
 
   export type ConversationCreateManyUserInput = {
     id?: string
     title?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
+    created_at?: Date | string
+    updated_at?: Date | string
   }
 
   export type TokenUsageLogUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    inputTokens?: IntFieldUpdateOperationsInput | number
-    outputTokens?: IntFieldUpdateOperationsInput | number
-    totalTokens?: IntFieldUpdateOperationsInput | number
-    modelName?: StringFieldUpdateOperationsInput | string
+    input_tokens?: IntFieldUpdateOperationsInput | number
+    output_tokens?: IntFieldUpdateOperationsInput | number
+    total_tokens?: IntFieldUpdateOperationsInput | number
+    model_name?: StringFieldUpdateOperationsInput | string
     cost?: FloatFieldUpdateOperationsInput | number
-    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversation_id?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TokenUsageLogUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    inputTokens?: IntFieldUpdateOperationsInput | number
-    outputTokens?: IntFieldUpdateOperationsInput | number
-    totalTokens?: IntFieldUpdateOperationsInput | number
-    modelName?: StringFieldUpdateOperationsInput | string
+    input_tokens?: IntFieldUpdateOperationsInput | number
+    output_tokens?: IntFieldUpdateOperationsInput | number
+    total_tokens?: IntFieldUpdateOperationsInput | number
+    model_name?: StringFieldUpdateOperationsInput | string
     cost?: FloatFieldUpdateOperationsInput | number
-    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversation_id?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TokenUsageLogUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    inputTokens?: IntFieldUpdateOperationsInput | number
-    outputTokens?: IntFieldUpdateOperationsInput | number
-    totalTokens?: IntFieldUpdateOperationsInput | number
-    modelName?: StringFieldUpdateOperationsInput | string
+    input_tokens?: IntFieldUpdateOperationsInput | number
+    output_tokens?: IntFieldUpdateOperationsInput | number
+    total_tokens?: IntFieldUpdateOperationsInput | number
+    model_name?: StringFieldUpdateOperationsInput | string
     cost?: FloatFieldUpdateOperationsInput | number
-    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversation_id?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ConversationUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     messages?: MessageUpdateManyWithoutConversationNestedInput
+    shared_conversations?: SharedConversationUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
+    shared_conversations?: SharedConversationUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageCreateManyConversationInput = {
     id?: string
     role: string
     content: string
-    createdAt?: Date | string
+    created_at?: Date | string
+  }
+
+  export type SharedConversationCreateManyConversationInput = {
+    id?: string
+    share_id?: string
+    title: string
+    is_public?: boolean
+    expires_at?: Date | string | null
+    view_count?: number
+    created_at?: Date | string
+    updated_at?: Date | string
   }
 
   export type MessageUpdateWithoutConversationInput = {
     id?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     images?: MessageImageUpdateManyWithoutMessageNestedInput
   }
 
@@ -9321,7 +11110,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     images?: MessageImageUncheckedUpdateManyWithoutMessageNestedInput
   }
 
@@ -9329,51 +11118,84 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SharedConversationUpdateWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    share_id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    is_public?: BoolFieldUpdateOperationsInput | boolean
+    expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    view_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SharedConversationUncheckedUpdateWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    share_id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    is_public?: BoolFieldUpdateOperationsInput | boolean
+    expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    view_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SharedConversationUncheckedUpdateManyWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    share_id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    is_public?: BoolFieldUpdateOperationsInput | boolean
+    expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    view_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageImageCreateManyMessageInput = {
     id?: string
     filename: string
-    originalName?: string | null
-    mimeType: string
+    original_name?: string | null
+    mime_type: string
     size: number
-    base64Data: string
+    base64_data: string
     url?: string | null
-    createdAt?: Date | string
+    created_at?: Date | string
   }
 
   export type MessageImageUpdateWithoutMessageInput = {
     id?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
-    originalName?: NullableStringFieldUpdateOperationsInput | string | null
-    mimeType?: StringFieldUpdateOperationsInput | string
+    original_name?: NullableStringFieldUpdateOperationsInput | string | null
+    mime_type?: StringFieldUpdateOperationsInput | string
     size?: IntFieldUpdateOperationsInput | number
-    base64Data?: StringFieldUpdateOperationsInput | string
+    base64_data?: StringFieldUpdateOperationsInput | string
     url?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageImageUncheckedUpdateWithoutMessageInput = {
     id?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
-    originalName?: NullableStringFieldUpdateOperationsInput | string | null
-    mimeType?: StringFieldUpdateOperationsInput | string
+    original_name?: NullableStringFieldUpdateOperationsInput | string | null
+    mime_type?: StringFieldUpdateOperationsInput | string
     size?: IntFieldUpdateOperationsInput | number
-    base64Data?: StringFieldUpdateOperationsInput | string
+    base64_data?: StringFieldUpdateOperationsInput | string
     url?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageImageUncheckedUpdateManyWithoutMessageInput = {
     id?: StringFieldUpdateOperationsInput | string
     filename?: StringFieldUpdateOperationsInput | string
-    originalName?: NullableStringFieldUpdateOperationsInput | string | null
-    mimeType?: StringFieldUpdateOperationsInput | string
+    original_name?: NullableStringFieldUpdateOperationsInput | string | null
+    mime_type?: StringFieldUpdateOperationsInput | string
     size?: IntFieldUpdateOperationsInput | number
-    base64Data?: StringFieldUpdateOperationsInput | string
+    base64_data?: StringFieldUpdateOperationsInput | string
     url?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 
