@@ -15,7 +15,7 @@ export const useTokenRecorder = () => {
   const recordTokenUsage = useCallback(async (
     inputTokens: number,
     outputTokens: number,
-    model: string = 'gpt-4'
+    model: string = 'o4-mini-2025-04-16'
   ) => {
     try {
       const response = await fetch('/api/token/record', {

@@ -2,21 +2,21 @@
 
 import { useCallback } from 'react'
 
-// OpenAI APIの料金（1000トークンあたりの価格、単位: USD）
-// 2024年8月時点の情報。変更された場合は更新が必要
-const TOKEN_PRICE = {
-  'gpt-4': {
-    INPUT: 0.01, // $10 per 1M tokens for input
-    OUTPUT: 0.03, // $30 per 1M tokens for output
+// o4-mini料金設定（1M tokensあたりの価格、単位: USD）
+// o4-mini-2025-04-16の価格を使用
+const O4_MINI_PRICE = {
+  'o4-mini': {
+    INPUT: 1.10,   // $1.10 per 1M tokens
+    OUTPUT: 4.40   // $4.40 per 1M tokens
   },
-  'gpt-3.5-turbo': {
-    INPUT: 0.0005, // $0.5 per 1M tokens for input
-    OUTPUT: 0.0015, // $1.5 per 1M tokens for output
+  'o4-mini-2025-04-16': {
+    INPUT: 1.10,   // $1.10 per 1M tokens
+    OUTPUT: 4.40   // $4.40 per 1M tokens
   },
   // デフォルト値（モデルが不明の場合）
   'default': {
-    INPUT: 0.01,
-    OUTPUT: 0.03,
+    INPUT: 1.10,
+    OUTPUT: 4.40,
   }
 };
 
@@ -44,7 +44,7 @@ export const useTokenRecorder = () => {
   const recordTokenUsage = useCallback(async (
     inputText: string,
     outputText: string,
-    model: string = 'gpt-4',
+    model: string = 'o4-mini-2025-04-16',
     conversationId?: string
   ) => {
     try {
@@ -81,13 +81,13 @@ export const useTokenRecorder = () => {
   /**
    * 予測されるトークン使用量とコストを計算する
    */
-  const estimateUsage = useCallback((inputText: string, outputText: string, model: string = 'gpt-4') => {
+  const estimateUsage = useCallback((inputText: string, outputText: string, model: string = 'o4-mini-2025-04-16') => {
     const inputTokens = countTokens(inputText) + 200;
     const outputTokens = countTokens(outputText);
     const totalTokens = inputTokens + outputTokens;
     
     // モデルに基づいた価格設定を取得
-    const modelPricing = TOKEN_PRICE[model as keyof typeof TOKEN_PRICE] || TOKEN_PRICE.default;
+    const modelPricing = O4_MINI_PRICE[model as keyof typeof O4_MINI_PRICE] || O4_MINI_PRICE.default;
     
     // コストの計算（USD）
     const inputCost = (inputTokens / 1000000) * modelPricing.INPUT;

@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     // OpenAI APIを呼び出し
     const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "o4-mini",
       messages: [
         {
           role: "system",
@@ -103,17 +103,28 @@ export async function POST(request: NextRequest) {
       usage: usage
     });
 
+    // o4-mini料金設定（1M tokensあたりの価格）
+    const O4_MINI_PRICE = {
+      INPUT: 1.10,   // $1.10 per 1M tokens
+      OUTPUT: 4.40   // $4.40 per 1M tokens
+    };
+
     // トークン使用量を記録
     if (usage) {
       try {
+        // コスト計算（1M tokensあたりの価格で計算）
+        const inputCost = (usage.prompt_tokens / 1000000) * O4_MINI_PRICE.INPUT;
+        const outputCost = (usage.completion_tokens / 1000000) * O4_MINI_PRICE.OUTPUT;
+        const totalCost = inputCost + outputCost;
+
         await prisma.tokenUsageLog.create({
           data: {
             userId: userId,
             inputTokens: usage.prompt_tokens,
             outputTokens: usage.completion_tokens,
             totalTokens: usage.total_tokens,
-            modelName: 'gpt-4o-mini',
-            cost: (usage.prompt_tokens * 0.00015 + usage.completion_tokens * 0.0006) / 1000, // GPT-4o-miniの価格
+            modelName: 'o4-mini-2025-04-16',
+            cost: totalCost,
           }
         });
 
@@ -125,7 +136,7 @@ export async function POST(request: NextRequest) {
               increment: usage.total_tokens
             },
             estimatedCost: {
-              increment: (usage.prompt_tokens * 0.00015 + usage.completion_tokens * 0.0006) / 1000
+              increment: totalCost
             }
           }
         });

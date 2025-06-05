@@ -16,11 +16,11 @@ console.log('Supabase Key Length:', supabaseKey ? supabaseKey.length : 0)
 
 export const supabase = createClient(supabaseUrl || '', supabaseKey || '')
 
-// OpenAI APIの料金（1000トークンあたりの価格、単位: USD）
-// 2024年8月時点の情報。変更された場合は更新が必要
-const TOKEN_PRICE = {
-  INPUT: 0.5 / 1000,  // $0.5 per 1M tokens for input
-  OUTPUT: 1.5 / 1000,  // $1.5 per 1M tokens for output
+// o4-mini料金設定（1M tokensあたりの価格、単位: USD）
+// o4-mini-2025-04-16の価格を使用
+const O4_MINI_PRICE = {
+  INPUT: 1.10,   // $1.10 per 1M tokens
+  OUTPUT: 4.40   // $4.40 per 1M tokens
 }
 
 /**
@@ -39,7 +39,7 @@ export const recordTokenUsage = async (userId: string, inputTokens: number, outp
   try {
     // トークン使用量をテーブルに記録
     const totalTokens = inputTokens + outputTokens;
-    const totalCost = (inputTokens * TOKEN_PRICE.INPUT) + (outputTokens * TOKEN_PRICE.OUTPUT);
+    const totalCost = ((inputTokens / 1000000) * O4_MINI_PRICE.INPUT) + ((outputTokens / 1000000) * O4_MINI_PRICE.OUTPUT);
 
     await prisma.tokenUsageLog.create({
       data: {

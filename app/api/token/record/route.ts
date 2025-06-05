@@ -2,29 +2,29 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@/app/generated/prisma'
 import { cookies } from 'next/headers'
 
-// OpenAI APIの料金（1000トークンあたりの価格、単位: USD）
-// o4-mini-highの価格を使用
-const TOKEN_PRICE = {
-  INPUT: 0.0011, // $1.10 per 1M tokens for input
-  OUTPUT: 0.0044, // $4.40 per 1M tokens for output
+// o4-mini料金設定（1M tokensあたりの価格、単位: USD）
+// o4-mini-2025-04-16の価格を使用
+const O4_MINI_PRICE = {
+  INPUT: 1.10,   // $1.10 per 1M tokens
+  OUTPUT: 4.40   // $4.40 per 1M tokens
 };
 
 // トークンの価格を計算する関数
 function calculateCost(inputTokens: number, outputTokens: number): number {
   // 入力トークンと出力トークンの価格を計算
-  const inputCost = (inputTokens / 1000000) * TOKEN_PRICE.INPUT;
-  const outputCost = (outputTokens / 1000000) * TOKEN_PRICE.OUTPUT;
+  const inputCost = (inputTokens / 1000000) * O4_MINI_PRICE.INPUT;
+  const outputCost = (outputTokens / 1000000) * O4_MINI_PRICE.OUTPUT;
   
   // 合計コスト（USD）
   const totalCost = inputCost + outputCost;
   
   // 詳細なログ出力
-  console.log('[TOKEN COST] === 費用計算詳細 ===');
+  console.log('[TOKEN COST] === o4-mini費用計算詳細 ===');
   console.log(`[TOKEN COST] 入力トークン: ${inputTokens} tokens`);
   console.log(`[TOKEN COST] 出力トークン: ${outputTokens} tokens`);
   console.log(`[TOKEN COST] 総トークン: ${inputTokens + outputTokens} tokens`);
-  console.log(`[TOKEN COST] 入力トークン費用: $${inputCost.toFixed(8)} (${inputTokens} tokens × $${TOKEN_PRICE.INPUT}/1M tokens)`);
-  console.log(`[TOKEN COST] 出力トークン費用: $${outputCost.toFixed(8)} (${outputTokens} tokens × $${TOKEN_PRICE.OUTPUT}/1M tokens)`);
+  console.log(`[TOKEN COST] 入力トークン費用: $${inputCost.toFixed(8)} (${inputTokens} tokens × $${O4_MINI_PRICE.INPUT}/1M tokens)`);
+  console.log(`[TOKEN COST] 出力トークン費用: $${outputCost.toFixed(8)} (${outputTokens} tokens × $${O4_MINI_PRICE.OUTPUT}/1M tokens)`);
   console.log(`[TOKEN COST] 総費用: $${totalCost.toFixed(8)}`);
   console.log(`[TOKEN COST] 総費用（円換算）: ¥${(totalCost * 150).toFixed(4)} (1USD=150円換算)`);
   console.log('[TOKEN COST] === 計算終了 ===');
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     const inputTokens = Number(body.inputTokens)
     const outputTokens = Number(body.outputTokens)
     const totalTokens = inputTokens + outputTokens
-    const modelName = 'o4-mini-high' // モデルを固定
+    const modelName = 'o4-mini-2025-04-16' // モデルを固定
     const conversationId = body.conversationId || null
     
     // コストを計算（詳細ログ付き）
